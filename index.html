@@ -63,8 +63,9 @@
 </head>
 <body class="text-white min-h-screen flex flex-col font-sans antialiased">
 
-    <!-- Herkes için Gizli Global Müzik Oynatıcı -->
+    <!-- Global Müzik Oynatıcılar (MP3 ve YouTube için) -->
     <audio id="global-audio-player" loop></audio>
+    <div id="yt-player-container" class="hidden"></div>
 
     <!-- 1. GİRİŞ & KAYIT EKRANI -->
     <div id="auth-container" class="min-h-screen flex items-center justify-center p-4">
@@ -122,7 +123,6 @@
                 </nav>
             </div>
             <div class="pt-4 border-t border-white/10 text-center space-y-2">
-                <!-- Eğlence İndikatörü -->
                 <div id="music-indicator" class="hidden animate-pulse text-xs text-[#d4af37] font-bold mb-2">🎵 Müzik Çalıyor</div>
                 <p class="text-[11px] text-gray-400">Son Giriş: <span id="last-login-time" class="text-white">-</span></p>
                 <button onclick="logout()" class="w-full py-2 bg-red-950/40 hover:bg-red-900/60 border border-red-800/30 text-red-200 text-xs font-semibold rounded-lg transition">
@@ -148,7 +148,7 @@
 
             <div class="flex-1 p-6 overflow-y-auto max-w-5xl mx-auto w-full z-10 relative">
                 
-                <!-- TAB 1: GÜNLÜK OLAYLAR (GÖRSEL DESTEKLİ) -->
+                <!-- TAB 1: GÜNLÜK OLAYLAR -->
                 <section id="events-tab" class="tab-content space-y-6">
                     <div class="flex justify-between items-center">
                         <h3 class="text-lg font-bold border-l-4 border-[#d4af37] pl-3">📅 Günün Olayları & Duyurular</h3>
@@ -179,11 +179,13 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="glass-card rounded-xl p-6 space-y-4">
                             <h4 class="font-bold text-sm border-b border-white/5 pb-2">Sınıftaki Kişiler</h4>
-                            <div id="all-users-list" class="space-y-2 max-h-64 overflow-y-auto pr-2"></div>
+                            <div id="all-users-list" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
                         </div>
                         <div class="glass-card rounded-xl p-6 space-y-4">
-                            <h4 class="font-bold text-sm border-b border-white/5 pb-2 flex justify-between">Gelen İstekler <span id="req-count-badge" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full">0</span></h4>
-                            <div id="friend-requests-list" class="space-y-2 max-h-64 overflow-y-auto pr-2"></div>
+                            <h4 class="font-bold text-sm border-b border-white/5 pb-2 flex justify-between">Gelen İstekler <span id="req-count-badge" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span></h4>
+                            <div id="friend-requests-list" class="space-y-2 max-h-80 overflow-y-auto pr-2">
+                                <p class="text-xs text-gray-500">Bekleyen istek yok.</p>
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -192,26 +194,28 @@
                 <section id="private-tab" class="tab-content hidden flex flex-col md:flex-row h-[70vh] gap-4">
                     <div class="w-full md:w-64 glass-card rounded-xl p-4 flex flex-col overflow-hidden">
                         <h4 class="font-bold text-sm pb-3 border-b border-white/5 mb-3">Arkadaşlarım</h4>
-                        <div id="user-list-private" class="flex-1 overflow-y-auto space-y-1"></div>
+                        <div id="user-list-private" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
                     </div>
                     <div class="flex-1 glass-card rounded-xl p-4 flex flex-col overflow-hidden">
-                        <div id="private-chat-header" class="font-bold text-sm pb-3 border-b border-white/5 mb-3">Arkadaş seçin...</div>
+                        <div class="pb-3 border-b border-white/5 mb-3 flex items-center">
+                            <div id="private-chat-header" class="font-bold text-sm text-gray-400">Arkadaş seçin...</div>
+                        </div>
                         <div id="private-chat-box" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-2"></div>
                         <div class="flex space-x-2">
-                            <input type="text" id="private-chat-input" disabled placeholder="..." class="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#d4af37]" onkeypress="handleChatEnter(event, 'private')">
-                            <button id="private-chat-send-btn" disabled onclick="sendPrivateMessage()" class="btn-gold text-black font-bold px-6 rounded-lg">Gönder</button>
+                            <input type="text" id="private-chat-input" disabled placeholder="Mesaj yazmak için arkadaş seçin..." class="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#d4af37] disabled:opacity-50" onkeypress="handleChatEnter(event, 'private')">
+                            <button id="private-chat-send-btn" disabled onclick="sendPrivateMessage()" class="btn-gold text-black font-bold px-6 rounded-lg disabled:opacity-50">Gönder</button>
                         </div>
                     </div>
                 </section>
 
-                <!-- TAB 5: YENİ GELİŞMİŞ CANLI DESTEK (TICKET) -->
+                <!-- TAB 5: CANLI DESTEK (Çoklu sekme destekli) -->
                 <section id="support-tab" class="tab-content hidden flex flex-col h-[70vh]">
                     <div class="glass-card flex-1 rounded-xl p-6 flex flex-col overflow-hidden border-t-4 border-blue-500 relative">
                         <!-- Kullanıcı Talep Açma Ekranı -->
                         <div id="support-creation-screen" class="absolute inset-0 bg-[#050814]/90 z-10 flex flex-col items-center justify-center space-y-4 p-6 text-center">
                             <i class="fa-solid fa-headset text-6xl text-blue-500 mb-4"></i>
                             <h3 class="text-xl font-bold">Admin Destek Hattı</h3>
-                            <p class="text-sm text-gray-400 max-w-md">Bir sorunun mu var veya birini mi şikayet edeceksin? Buradan bir talep oluştur. (Saatte 1 kez talep açabilirsin).</p>
+                            <p class="text-sm text-gray-400 max-w-md">Bir sorunun mu var veya birini mi şikayet edeceksin? Buradan bir talep oluştur.</p>
                             <button onclick="createNewTicket()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-3 rounded-lg transition text-lg mt-4 shadow-lg shadow-blue-500/30">Yeni Talep Oluştur</button>
                         </div>
 
@@ -219,10 +223,11 @@
                         <div id="support-active-screen" class="hidden flex-1 flex flex-col h-full w-full">
                             <div class="flex justify-between items-center pb-3 border-b border-white/5 mb-3">
                                 <div>
+                                    <button id="admin-ticket-back-btn" onclick="backToAdminTickets()" class="hidden text-[10px] bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded mr-2"><i class="fa-solid fa-arrow-left"></i> Taleplere Dön</button>
                                     <span id="active-ticket-title" class="font-bold text-sm text-blue-400">Destek-?</span>
                                     <span id="active-ticket-status" class="ml-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded">Admin Onayı Bekliyor</span>
                                 </div>
-                                <button onclick="closeMyTicket()" class="text-[10px] bg-red-500/20 text-red-400 hover:bg-red-500/40 px-3 py-1.5 rounded">Talebi İptal Et</button>
+                                <button onclick="closeMyTicket()" class="text-[10px] bg-red-500/20 text-red-400 hover:bg-red-500/40 px-3 py-1.5 rounded">Talebi Kapat</button>
                             </div>
                             <div id="support-chat-box" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-2"></div>
                             <div class="flex space-x-2">
@@ -233,7 +238,7 @@
                     </div>
                 </section>
 
-                <!-- TAB 6: ADMİN PANELİ (EĞLENCE MODLARI EKLENDİ) -->
+                <!-- TAB 6: ADMİN PANELİ -->
                 <section id="admin-tab" class="tab-content hidden space-y-6">
                     <h3 class="text-lg font-bold border-l-4 border-red-500 pl-3">🛡️ Kurucu Kontrol Paneli</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -256,24 +261,13 @@
                                 <button id="btn-disco" onclick="toggleDiscoMode()" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 font-bold rounded-lg transition shadow-lg">🕺 DİSKO MODUNU AÇ/KAPAT</button>
                                 
                                 <div class="bg-white/5 p-3 rounded-lg border border-white/10">
-                                    <label class="text-xs text-gray-400 block mb-1">Müzik Çal (MP3 URL girin)</label>
+                                    <label class="text-xs text-gray-400 block mb-1">Müzik Çal (MP3 veya YouTube URL)</label>
                                     <div class="flex space-x-2">
-                                        <input type="text" id="admin-music-url" placeholder="https://site.com/sarki.mp3" class="flex-1 px-3 py-2 text-xs rounded bg-black/50 border border-white/20 text-white focus:outline-none">
+                                        <input type="text" id="admin-music-url" placeholder="Youtube linki veya mp3 linki" class="flex-1 px-3 py-2 text-xs rounded bg-black/50 border border-white/20 text-white focus:outline-none">
                                         <button onclick="playGlobalMusic()" class="bg-green-600 hover:bg-green-500 text-white text-xs font-bold px-3 rounded">▶ Çal</button>
                                         <button onclick="stopGlobalMusic()" class="bg-red-600 hover:bg-red-500 text-white text-xs font-bold px-3 rounded">⏹ Dur</button>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Kullanıcı Listesi (Eski) -->
-                        <div class="glass-card rounded-xl p-6 space-y-4 md:col-span-2">
-                            <h4 class="font-bold text-sm border-b border-white/5 pb-2">Tüm Üyeler</h4>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-left text-xs">
-                                    <thead><tr class="border-b border-white/10 text-gray-400"><th class="pb-2">Kullanıcı</th><th class="pb-2">Rol</th><th class="pb-2">İşlem</th></tr></thead>
-                                    <tbody id="admin-users-table"></tbody>
-                                </table>
                             </div>
                         </div>
                     </div>
@@ -295,7 +289,6 @@
             </div>
         </div>
     </div>
-
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -377,7 +370,6 @@
                 document.getElementById('user-role-badge').classList.add('bg-red-500/20', 'text-red-400');
                 document.getElementById('admin-menu-btn').classList.remove('hidden');
                 document.getElementById('add-event-btn').classList.remove('hidden');
-                setupAdminPanel();
                 listenAdminTickets();
             }
 
@@ -399,10 +391,11 @@
             });
             event.currentTarget.classList.add('bg-white/5', 'text-[#d4af37]');
             event.currentTarget.classList.remove('text-gray-400', 'hover:text-white');
-            if(tabId === 'chat-tab' || tabId === 'support-tab') {
+            if(tabId === 'chat-tab' || tabId === 'support-tab' || tabId === 'private-tab') {
                 setTimeout(() => {
-                    const box = tabId === 'chat-tab' ? document.getElementById('global-chat-box') : document.getElementById('support-chat-box');
-                    box.scrollTop = box.scrollHeight;
+                    const box = tabId === 'chat-tab' ? document.getElementById('global-chat-box') : 
+                                (tabId === 'support-tab' ? document.getElementById('support-chat-box') : document.getElementById('private-chat-box'));
+                    if(box) box.scrollTop = box.scrollHeight;
                 }, 100);
             }
         }
@@ -425,7 +418,7 @@
                 if(!snap.exists()) return;
                 let events = []; snap.forEach(c => events.unshift(c.val()));
                 events.forEach(ev => {
-                    let imgHtml = ev.imageUrl ? `<img src="${ev.imageUrl}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-md border border-white/10" alt="Haber Görseli">` : '';
+                    let imgHtml = ev.imageUrl ? `<img src="${ev.imageUrl}" class="w-full h-48 object-cover rounded-lg mb-3 shadow-md border border-white/10">` : '';
                     list.innerHTML += `
                         <div class="glass-card rounded-xl p-6 space-y-3 shadow-lg">
                             <span class="text-xs text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-full">${ev.timestamp}</span>
@@ -469,11 +462,149 @@
                 box.scrollTop = box.scrollHeight;
             });
         }
-        function listenUsersForFriends() { }
-        function listenFriendRequests() { }
-        function listenMyFriends() { }
 
-        // ------------------------- DESTEK SİSTEMİ -------------------------
+        /* 🚀 FIXLENMİŞ ARKADAŞ SİSTEMİ 🚀 */
+        function listenUsersForFriends() {
+            onValue(ref(db, 'users'), (snapshot) => {
+                const list = document.getElementById('all-users-list');
+                list.innerHTML = "";
+                if(!snapshot.exists()) return;
+                snapshot.forEach(c => {
+                    const u = c.val();
+                    if(u.uid === currentUser.uid) return;
+                    list.innerHTML += `
+                        <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg mb-2 border border-white/5">
+                            <div>
+                                <p class="text-sm font-bold text-white">${u.username}</p>
+                                <p class="text-[10px] text-gray-400"><i class="fa-solid fa-clock mr-1"></i>Son giriş: ${u.lastLogin || 'Bilinmiyor'}</p>
+                            </div>
+                            <button onclick="sendFriendRequest('${u.uid}', '${u.username}')" class="text-[10px] btn-gold text-black px-3 py-1.5 rounded font-bold transition">İstek At</button>
+                        </div>`;
+                });
+            });
+        }
+
+        window.sendFriendRequest = function(targetUid, targetName) {
+            set(ref(db, `friend_requests/${targetUid}/${currentUser.uid}`), {
+                uid: currentUser.uid, username: currentUserData.username, timestamp: Date.now()
+            }).then(() => alert(targetName + " kişisine arkadaşlık isteği gönderildi!"));
+        }
+
+        function listenFriendRequests() {
+            onValue(ref(db, `friend_requests/${currentUser.uid}`), (snapshot) => {
+                const list = document.getElementById('friend-requests-list');
+                const badge = document.getElementById('req-count-badge');
+                const navBadge = document.getElementById('friend-req-count');
+                list.innerHTML = "";
+                
+                if(!snapshot.exists()) {
+                    badge.classList.add('hidden');
+                    navBadge.classList.add('hidden');
+                    list.innerHTML = '<p class="text-xs text-gray-500">Bekleyen istek yok.</p>';
+                    return;
+                }
+                
+                let count = 0;
+                snapshot.forEach(c => {
+                    const req = c.val();
+                    count++;
+                    list.innerHTML += `
+                        <div class="flex flex-col space-y-2 bg-white/5 p-3 rounded-lg mb-2 border border-blue-500/30">
+                            <p class="text-sm font-bold text-white">${req.username} seni eklemek istiyor!</p>
+                            <div class="flex space-x-2">
+                                <button onclick="acceptFriend('${req.uid}', '${req.username}')" class="flex-1 bg-green-600 hover:bg-green-500 text-white text-[10px] py-1.5 rounded font-bold transition">Kabul Et</button>
+                                <button onclick="rejectFriend('${req.uid}')" class="flex-1 bg-red-600 hover:bg-red-500 text-white text-[10px] py-1.5 rounded font-bold transition">Reddet</button>
+                            </div>
+                        </div>`;
+                });
+                
+                badge.innerText = count; badge.classList.remove('hidden');
+                navBadge.innerText = count; navBadge.classList.remove('hidden');
+            });
+        }
+
+        window.acceptFriend = function(targetUid, targetName) {
+            update(ref(db, `friends/${currentUser.uid}/${targetUid}`), { uid: targetUid, username: targetName });
+            update(ref(db, `friends/${targetUid}/${currentUser.uid}`), { uid: currentUser.uid, username: currentUserData.username });
+            rejectFriend(targetUid); // İsteği sil
+        }
+        window.rejectFriend = function(targetUid) {
+            remove(ref(db, `friend_requests/${currentUser.uid}/${targetUid}`));
+        }
+
+        function listenMyFriends() {
+            onValue(ref(db, `friends/${currentUser.uid}`), (snapshot) => {
+                const list = document.getElementById('user-list-private');
+                list.innerHTML = "";
+                if(!snapshot.exists()) {
+                    list.innerHTML = '<p class="text-xs text-gray-500 p-2">Henüz arkadaşın yok.</p>';
+                    return;
+                }
+                snapshot.forEach(c => {
+                    const f = c.val();
+                    list.innerHTML += `
+                        <div onclick="openPrivateChat('${f.uid}', '${f.username}')" class="cursor-pointer hover:bg-white/10 p-3 rounded-lg mb-1 transition flex items-center justify-between group">
+                            <span class="font-bold text-sm text-gray-200 group-hover:text-[#d4af37] transition">${f.username}</span>
+                            <i class="fa-solid fa-comment-dots text-gray-500 group-hover:text-[#d4af37]"></i>
+                        </div>`;
+                });
+            });
+        }
+
+        /* 🚀 FIXLENMİŞ ÖZEL MESAJ SİSTEMİ 🚀 */
+        window.openPrivateChat = function(uid, name) {
+            activePrivateChatUid = uid;
+            document.getElementById('private-chat-header').innerHTML = `<i class="fa-solid fa-lock text-[#d4af37] mr-2"></i> ${name} ile Sohbet Ediyorsun`;
+            document.getElementById('private-chat-input').disabled = false;
+            document.getElementById('private-chat-send-btn').disabled = false;
+            document.getElementById('private-chat-input').placeholder = "Mesaj yaz...";
+            
+            // Eğer mobildeyse sekmeyi zorla aç (Responsive iyileştirme)
+            if(window.innerWidth < 768) {
+                document.getElementById('private-tab').scrollIntoView({behavior: "smooth"});
+            }
+            
+            listenPrivateChat();
+        }
+
+        window.sendPrivateMessage = function() {
+            const input = document.getElementById('private-chat-input');
+            const text = input.value.trim();
+            if(!text || !activePrivateChatUid) return;
+            
+            // İki UID'yi alfabetik sıraya göre birleştirerek benzersiz özel sohbet odası ID'si oluştur
+            const chatId = currentUser.uid > activePrivateChatUid ? currentUser.uid + "_" + activePrivateChatUid : activePrivateChatUid + "_" + currentUser.uid;
+            
+            push(ref(db, `private_chats/${chatId}`), {
+                senderId: currentUser.uid, senderName: currentUserData.username,
+                text: text, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }).then(() => input.value = "");
+        }
+
+        function listenPrivateChat() {
+            if(!activePrivateChatUid) return;
+            const chatId = currentUser.uid > activePrivateChatUid ? currentUser.uid + "_" + activePrivateChatUid : activePrivateChatUid + "_" + currentUser.uid;
+            
+            onValue(ref(db, `private_chats/${chatId}`), (snapshot) => {
+                const box = document.getElementById('private-chat-box');
+                box.innerHTML = "";
+                if(!snapshot.exists()) return;
+                
+                snapshot.forEach((child) => {
+                    const msg = child.val();
+                    const isMe = msg.senderId === currentUser.uid;
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `flex ${isMe ? 'justify-end' : 'justify-start'} w-full msg-anim`;
+                    let bgClass = isMe ? 'bg-[#d4af37] text-black rounded-tr-none' : 'bg-white/10 text-gray-200 rounded-tl-none border border-white/5';
+                    msgDiv.innerHTML = `<div class="max-w-[70%] rounded-2xl p-3 ${bgClass} shadow-md"><p class="text-[10px] font-bold opacity-70 mb-1">${msg.senderName}</p><p class="text-sm break-all">${msg.text}</p></div>`;
+                    box.appendChild(msgDiv);
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+
+        // ------------------------- DESTEK SİSTEMİ (ÇOKLU ADMİN DESTEKLİ) -------------------------
         window.createNewTicket = function() {
             const now = Date.now();
             const lastTime = currentUserData.lastTicketTime || 0;
@@ -517,6 +648,7 @@
                     document.getElementById('support-creation-screen').classList.add('hidden');
                     document.getElementById('support-active-screen').classList.remove('hidden');
                     document.getElementById('active-ticket-title').innerText = ticket.title;
+                    document.getElementById('admin-ticket-back-btn').classList.add('hidden'); // Sadece adminlerde görünsün
                     
                     const statusBadge = document.getElementById('active-ticket-status');
                     if(ticket.status === 'pending') {
@@ -537,8 +669,14 @@
 
         window.closeMyTicket = function() {
             if(confirm("Talebi iptal edip kapatmak istiyor musun?")) {
-                remove(ref(db, `tickets/${currentUser.uid}`));
-                remove(ref(db, `ticket_chats/${currentUser.uid}`));
+                if(currentUserData.role === 'admin') {
+                     remove(ref(db, `tickets/${activeTicketId}`));
+                     remove(ref(db, `ticket_chats/${activeTicketId}`));
+                     backToAdminTickets();
+                } else {
+                     remove(ref(db, `tickets/${currentUser.uid}`));
+                     remove(ref(db, `ticket_chats/${currentUser.uid}`));
+                }
             }
         }
 
@@ -557,7 +695,7 @@
                             <div>
                                 <p class="text-sm font-bold text-white">${t.title} <span class="text-[10px] text-gray-400 font-normal">(${t.creatorName})</span></p>
                             </div>
-                            <button onclick="joinTicket('${t.id}', '${t.title}')" class="text-xs bg-blue-600 px-3 py-1.5 rounded font-bold">${t.status==='pending' ? 'Kabul Et' : 'Sohbete Git'}</button>
+                            <button onclick="joinTicket('${t.id}', '${t.title}')" class="text-xs bg-blue-600 px-3 py-1.5 rounded font-bold shadow-lg">${t.status==='pending' ? 'Cevapla' : 'Sohbete Dön'}</button>
                         </div>
                     `;
                 });
@@ -567,13 +705,24 @@
         window.joinTicket = function(ticketId, title) {
             update(ref(db, `tickets/${ticketId}`), { status: 'active' });
             activeTicketId = ticketId;
-            switchTab('support-tab');
+            switchTab('support-tab'); // Sekmeyi desteğe geçir
+            
+            // UI Güncelle
             document.getElementById('support-creation-screen').classList.add('hidden');
             document.getElementById('support-active-screen').classList.remove('hidden');
             document.getElementById('active-ticket-title').innerText = title + " (Admin Modu)";
             document.getElementById('active-ticket-status').innerText = "🟢 Müşteri ile Görüşülüyor";
             document.getElementById('active-ticket-status').className = "ml-2 text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded";
+            
+            // Admin Geri Butonunu Göster
+            document.getElementById('admin-ticket-back-btn').classList.remove('hidden');
+            
             listenTicketChat(ticketId);
+        }
+
+        // Adminin Diğer Taleplere Hızlı Dönmesi İçin
+        window.backToAdminTickets = function() {
+            switchTab('admin-tab');
         }
 
         window.sendTicketMessage = function() {
@@ -595,12 +744,12 @@
                     const isMe = msg.senderId === currentUser.uid;
                     const isAdmin = msg.role === 'admin';
                     let bgClass = isAdmin ? 'bg-blue-600 text-white rounded-xl' : 'bg-white/10 text-gray-200';
-                    if(isMe) bgClass = 'bg-[#d4af37] text-black rounded-tr-none'; else bgClass += ' rounded-tl-none';
+                    if(isMe) bgClass = 'bg-[#d4af37] text-black rounded-tr-none'; else bgClass += ' rounded-tl-none border border-white/10';
                     box.innerHTML += `
                         <div class="flex ${isMe ? 'justify-end' : 'justify-start'} w-full msg-anim">
                             <div class="max-w-[70%] rounded-2xl p-3 ${bgClass} shadow-md">
-                                <p class="text-[10px] ${isMe ? 'text-black/70' : 'text-blue-300'} font-bold">${msg.senderName} ${isAdmin ? '🛡️ Admin' : ''}</p>
-                                <p class="text-sm mt-0.5 break-all">${msg.text}</p>
+                                <p class="text-[10px] ${isMe ? 'text-black/70' : 'text-blue-300'} font-bold mb-1">${msg.senderName} ${isAdmin ? '🛡️ Admin' : ''}</p>
+                                <p class="text-sm break-all">${msg.text}</p>
                             </div>
                         </div>`;
                 });
@@ -608,7 +757,15 @@
             });
         }
 
-        // ------------------------- EĞLENCE & DISCO -------------------------
+        // ------------------------- EĞLENCE, DISCO & YOUTUBE MÜZİK -------------------------
+        
+        // YouTube URL'sinden ID çıkaran küçük bir fonksiyon
+        function extractYTId(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
         window.toggleDiscoMode = function() {
             get(ref(db, 'global_state/discoMode')).then(snap => {
                 const currentState = snap.exists() ? snap.val() : false;
@@ -618,7 +775,7 @@
 
         window.playGlobalMusic = function() {
             const url = document.getElementById('admin-music-url').value.trim();
-            if(!url) return alert("Lütfen MP3 formatında bir link girin.");
+            if(!url) return alert("Lütfen MP3 veya YouTube linki girin.");
             update(ref(db, 'global_state'), { musicUrl: url, playMusic: true, updateTime: Date.now() });
         }
 
@@ -631,45 +788,49 @@
                 if(!snapshot.exists()) return;
                 const state = snapshot.val();
                 
+                // Disco Modu
                 if(state.discoMode) {
                     document.body.classList.add('disco-active');
                     document.getElementById('btn-disco')?.classList.replace('from-purple-600', 'from-red-600');
-                    document.getElementById('btn-disco').innerText = "🛑 DİSKO MODUNU KAPAT";
+                    if(document.getElementById('btn-disco')) document.getElementById('btn-disco').innerText = "🛑 DİSKO MODUNU KAPAT";
                 } else {
                     document.body.classList.remove('disco-active');
                     document.getElementById('btn-disco')?.classList.replace('from-red-600', 'from-purple-600');
-                    document.getElementById('btn-disco').innerText = "🕺 DİSKO MODUNU AÇ";
+                    if(document.getElementById('btn-disco')) document.getElementById('btn-disco').innerText = "🕺 DİSKO MODUNU AÇ";
                 }
 
+                // Müzik & YouTube Altyapısı
                 const audio = document.getElementById('global-audio-player');
+                const ytContainer = document.getElementById('yt-player-container');
                 const indicator = document.getElementById('music-indicator');
                 
                 if(state.playMusic && state.musicUrl) {
-                    if(audio.src !== state.musicUrl || audio.paused) {
-                        audio.src = state.musicUrl;
-                        audio.play().then(() => {
-                            indicator.classList.remove('hidden');
-                        }).catch(e => console.log("Otomatik oynatma engeli (Kullanıcı siteye tıklamamış olabilir)"));
+                    const ytId = extractYTId(state.musicUrl);
+                    
+                    if(ytId) {
+                        // YouTube Müzik (Arka planda gizli Iframe ile)
+                        audio.pause();
+                        ytContainer.innerHTML = `<iframe width="0" height="0" src="https://www.youtube.com/embed/${ytId}?autoplay=1&loop=1&playlist=${ytId}&controls=0" frameborder="0" allow="autoplay"></iframe>`;
+                        indicator.classList.remove('hidden');
+                    } else {
+                        // Normal MP3
+                        ytContainer.innerHTML = '';
+                        if(audio.src !== state.musicUrl || audio.paused) {
+                            audio.src = state.musicUrl;
+                            audio.play().then(() => {
+                                indicator.classList.remove('hidden');
+                            }).catch(e => console.log("Otomatik oynatma engeli - Kullanıcı etkileşimi bekleniyor."));
+                        }
                     }
                 } else {
                     audio.pause();
+                    ytContainer.innerHTML = '';
                     indicator.classList.add('hidden');
                 }
             });
         }
 
-        // ------------------------- ADMİN & KULLANICI DETAYLARI -------------------------
-        function setupAdminPanel() {
-            onValue(ref(db, 'users'), (snapshot) => {
-                const tbody = document.getElementById('admin-users-table');
-                tbody.innerHTML = "";
-                snapshot.forEach(c => {
-                    const u = c.val();
-                    tbody.innerHTML += `<tr class="border-b border-white/5"><td class="py-2"><p class="text-xs font-bold">${u.username}</p></td><td class="py-2"><span class="px-2 py-0.5 text-[10px] rounded ${u.role === 'admin'?'bg-red-500/20 text-red-400':'bg-blue-500/20 text-blue-400'}">${u.role}</span></td><td class="py-2">${u.role !== 'admin' ? `<button onclick="makeAdmin('${u.uid}')" class="text-[9px] text-red-400">Admin Yap</button>` : '-'}</td></tr>`;
-                });
-            });
-        }
-        window.makeAdmin = (uid) => { if(confirm("Emin misin?")) update(ref(db, 'users/'+uid), {role: "admin"}); }
+        // Enter tuşu desteği
         window.handleChatEnter = function(event, type) {
             if (event.key === 'Enter') {
                 if (type === 'global') sendGlobalMessage();
