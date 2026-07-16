@@ -94,10 +94,9 @@
     <!-- 2. ANA UYGULAMA PANELİ -->
     <div id="app-container" class="hidden min-h-screen flex flex-col md:flex-row relative">
         
-        <!-- YAN PANEL (Mobilde Gizli, Butonla Açılır) -->
+        <!-- YAN PANEL -->
         <aside id="sidebar-menu" class="hidden md:flex w-full md:w-64 glass-card border-r border-white/5 flex-col justify-between p-4 h-screen sticky top-0 z-40 max-md:fixed max-md:bg-[#050814]/95 max-md:backdrop-blur-xl">
             <div>
-                <!-- Mobil Kapatma Butonu -->
                 <div class="md:hidden flex justify-end mb-2">
                     <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white text-xl"><i class="fa-solid fa-times"></i></button>
                 </div>
@@ -146,11 +145,9 @@
         <main class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
             <header class="glass-card border-b border-white/5 px-4 sm:px-6 py-4 flex justify-between items-center z-10">
                 <div class="flex items-center space-x-3">
-                    <!-- Mobil Menü Açma Butonu -->
                     <button class="md:hidden text-[#d4af37] text-2xl mr-2" onclick="toggleMobileMenu()">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    
                     <img src="logo.png" class="w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-[#d4af37] shadow-lg object-cover hidden sm:block" onerror="this.style.display='none'" alt="">
                     <div>
                         <h2 class="text-lg sm:text-xl font-bold tracking-wide">8-D SINIFI</h2>
@@ -227,11 +224,9 @@
                 <!-- TAB 5: CANLI DESTEK -->
                 <section id="support-tab" class="tab-content hidden flex flex-col h-full max-h-[75vh]">
                     <div class="glass-card flex-1 rounded-xl p-4 sm:p-6 flex flex-col overflow-hidden border-t-4 border-blue-500 relative">
-                        <!-- Kullanıcı Talep Açma Ekranı -->
                         <div id="support-creation-screen" class="absolute inset-0 bg-[#050814]/95 z-10 flex flex-col items-center justify-center p-6 text-center">
                             <i class="fa-solid fa-headset text-5xl sm:text-6xl text-blue-500 mb-4"></i>
                             <h3 class="text-lg sm:text-xl font-bold mb-2">Destek Talebi Oluştur</h3>
-                            
                             <div class="w-full max-w-sm mt-4 space-y-3 text-left">
                                 <label class="text-xs text-gray-400">Talep Konusu / Nedeni:</label>
                                 <select id="ticket-reason" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-500">
@@ -244,7 +239,6 @@
                             </div>
                         </div>
 
-                        <!-- Aktif Talep Sohbet Ekranı -->
                         <div id="support-active-screen" class="hidden flex-1 flex flex-col h-full w-full">
                             <div class="flex justify-between items-center pb-3 border-b border-white/5 mb-3">
                                 <div class="flex items-center">
@@ -276,17 +270,17 @@
                             </div>
                         </div>
 
-                        <!-- Admin Logları (YENİ) -->
+                        <!-- Admin Logları (YENİ ÇEVRİMİÇİ SİSTEMİ) -->
                         <div class="glass-card rounded-xl p-6 space-y-4 border-t-2 border-green-500">
                             <h4 class="font-bold text-sm border-b border-white/5 pb-2 flex items-center justify-between">
-                                📊 Kullanıcı Son Görülme Logları
+                                📊 Kullanıcı Son Görülme & Aktiflik
                             </h4>
                             <div id="admin-logs-list" class="space-y-2 max-h-48 overflow-y-auto pr-2">
                                 <p class="text-xs text-gray-500">Yükleniyor...</p>
                             </div>
                         </div>
 
-                        <!-- Eğlence & GitHub Çalma Listesi (YENİ) -->
+                        <!-- Eğlence & GitHub Çalma Listesi -->
                         <div class="glass-card rounded-xl p-6 space-y-4 border-t-2 border-[#d4af37] md:col-span-2">
                             <h4 class="font-bold text-sm border-b border-white/5 pb-2 flex items-center justify-between">
                                 🎧 Sınıf Radyosu (GitHub Çalma Listesi)
@@ -319,15 +313,16 @@
             <textarea id="modal-event-content" rows="4" placeholder="Detaylar..." class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white resize-none focus:outline-none focus:border-[#d4af37]"></textarea>
             <div class="flex justify-end space-x-2 pt-2">
                 <button onclick="closeEventModal()" class="px-4 py-2 bg-white/5 rounded-lg text-sm font-medium hover:bg-white/10">İptal</button>
-                <button onclick="saveEvent()" class="btn-gold text-black text-sm font-bold px-4 py-2 rounded-lg">Yayınla</button>
+                <button onclick="saveEvent(event)" class="btn-gold text-black text-sm font-bold px-4 py-2 rounded-lg">Yayınla</button>
             </div>
         </div>
     </div>
 
+    <!-- onDisconnect eklendi! -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, set, update, get, onValue, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, set, update, get, onValue, push, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAIcr33ABLSw_5jPbmHH7CDAIc5GNmma_k",
@@ -351,18 +346,15 @@
         let isSignUpMode = false;
         let activeTabId = 'events-tab';
 
-        // Sayaçlar (Bildirim spamlama engeli için)
         let counts = { globalChat: 0, events: 0, privateChats: {} };
         let isInitLoad = { globalChat: true, events: true, privateChat: true };
 
-        // Mobil Menü Toggle
         window.toggleMobileMenu = function() {
             const sidebar = document.getElementById('sidebar-menu');
             sidebar.classList.toggle('hidden');
             sidebar.classList.toggle('flex');
         }
 
-        // ÖZEL BİLDİRİM (TOAST) FONKSİYONU
         window.showToast = function(title, desc, icon="fa-bell") {
             const toast = document.createElement('div');
             toast.className = 'glass-card p-3 sm:p-4 rounded-xl shadow-lg border-l-4 border-[#d4af37] text-white toast-anim pointer-events-auto flex items-start space-x-3 bg-[#050814]/90';
@@ -377,7 +369,7 @@
             }, 4000);
         }
 
-        // ------------------------- AUTH -------------------------
+        // ------------------------- AUTH & ÇEVRİMİÇİ SİSTEMİ -------------------------
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "Hesap Oluştur" : "Giriş Yap";
@@ -385,6 +377,7 @@
             document.querySelector('#auth-container button').innerText = isSignUpMode ? "Kayıt Ol" : "Giriş Yap";
             document.getElementById('auth-toggle-text').innerText = isSignUpMode ? "Zaten hesabın var mı? Giriş Yap" : "Hesabın yok mu? Kayıt Ol";
         }
+        
         window.handleAuthAction = function() {
             const email = document.getElementById('auth-email').value.trim();
             const password = document.getElementById('auth-password').value;
@@ -403,6 +396,7 @@
                 }).catch(err => alert("Hata: " + err.message));
             }
         }
+
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 currentUser = user;
@@ -410,6 +404,23 @@
                     if (snapshot.exists()) {
                         currentUserData = snapshot.val();
                         setupDashboard();
+                        
+                        // YENİ EKLENEN ÇEVRİMİÇİ (AKTİFLİK) KONTROLÜ
+                        const connectedRef = ref(db, '.info/connected');
+                        onValue(connectedRef, (snap) => {
+                            if (snap.val() === true) {
+                                const statusRef = ref(db, `users/${user.uid}/isOnline`);
+                                const lastLoginRef = ref(db, `users/${user.uid}/lastLogin`);
+                                
+                                // Çıkış yapınca/İnternet kopunca
+                                onDisconnect(statusRef).set(false);
+                                onDisconnect(lastLoginRef).set(new Date().toLocaleString());
+                                
+                                // Girdiğinde
+                                set(statusRef, true);
+                                update(lastLoginRef, new Date().toLocaleString());
+                            }
+                        });
                     }
                 });
             } else {
@@ -417,6 +428,7 @@
                 document.getElementById('app-container').classList.add('hidden');
             }
         });
+
         window.logout = () => signOut(auth).then(() => location.reload());
 
         function setupDashboard() {
@@ -432,7 +444,7 @@
                 document.getElementById('admin-menu-btn').classList.remove('hidden');
                 document.getElementById('add-event-btn').classList.remove('hidden');
                 listenAdminTickets();
-                listenAdminLogs(); // Adminlere özel loglar
+                listenAdminLogs(); 
             }
 
             listenEvents();
@@ -455,7 +467,6 @@
             event.currentTarget.classList.add('bg-white/5', 'text-[#d4af37]');
             event.currentTarget.classList.remove('text-gray-400', 'hover:text-white');
             
-            // Mobilde sekme seçilince menüyü kapat
             if(window.innerWidth < 768) {
                 document.getElementById('sidebar-menu').classList.add('hidden');
                 document.getElementById('sidebar-menu').classList.remove('flex');
@@ -470,20 +481,41 @@
             }
         }
 
-        // ------------------------- GÜNLÜK OLAYLAR -------------------------
+        // ------------------------- GÜNLÜK OLAYLAR (FİXLENDİ & GÜÇLENDİRİLDİ) -------------------------
         window.openEventModal = () => document.getElementById('event-modal').classList.remove('hidden');
         window.closeEventModal = () => document.getElementById('event-modal').classList.add('hidden');
-        window.saveEvent = () => {
-            const t = document.getElementById('modal-event-title').value, c = document.getElementById('modal-event-content').value;
+        
+        window.saveEvent = function(e) {
+            const btn = e ? e.currentTarget : document.querySelector('#event-modal button.btn-gold');
+            const t = document.getElementById('modal-event-title').value.trim();
+            const c = document.getElementById('modal-event-content').value.trim();
             const img = document.getElementById('modal-event-image').value.trim();
-            if(!t || !c) return;
+            
+            if(!t || !c) return alert("Lütfen başlık ve detay alanlarını doldurun!");
+            
+            const oldText = btn.innerText;
+            btn.innerText = "Yükleniyor...";
+            btn.disabled = true;
+
             const refE = push(ref(db, 'events'));
-            set(refE, { id: refE.key, title: t, content: c, imageUrl: img, author: currentUserData.username, timestamp: new Date().toLocaleString() })
-            .then(() => { 
+            set(refE, { 
+                id: refE.key, 
+                title: t, 
+                content: c, 
+                imageUrl: img, 
+                author: currentUserData.username, 
+                timestamp: new Date().toLocaleString() 
+            }).then(() => {
                 closeEventModal(); 
                 document.getElementById('modal-event-title').value = "";
                 document.getElementById('modal-event-content').value = "";
                 document.getElementById('modal-event-image').value = ""; 
+                showToast("Başarılı", "Yeni olay başarıyla eklendi!", "fa-check");
+            }).catch(err => {
+                alert("Hata oluştu: " + err.message);
+            }).finally(() => {
+                btn.innerText = oldText;
+                btn.disabled = false;
             });
         }
         
@@ -496,7 +528,6 @@
                 let events = []; 
                 snap.forEach(c => events.unshift(c.val()));
                 
-                // Bildirim Mantığı
                 if (!isInitLoad.events && events.length > counts.events) {
                     const latest = events[0];
                     if(latest.author !== currentUserData.username && activeTabId !== 'events-tab') {
@@ -553,7 +584,6 @@
                     box.appendChild(msgDiv);
                 });
 
-                // Bildirim Mantığı
                 if (!isInitLoad.globalChat && snapshot.size > counts.globalChat && lastMsg) {
                     if(lastMsg.senderId !== currentUser.uid && activeTabId !== 'chat-tab') {
                         showToast("Sınıf Sohbeti", `${lastMsg.senderName}: ${lastMsg.text}`, "fa-comments");
@@ -566,7 +596,6 @@
             });
         }
 
-        /* AYNI KİŞİYİ EKLEME BUG FIXLENDİ */
         function listenUsersForFriends() {
             onValue(ref(db, 'users'), (snapshot) => {
                 const list = document.getElementById('all-users-list');
@@ -587,19 +616,16 @@
         }
 
         window.sendFriendRequest = function(targetUid, targetName) {
-            // Önce arkadaş mı kontrol et
             get(ref(db, `friends/${currentUser.uid}/${targetUid}`)).then(snap => {
                 if (snap.exists()) {
                     showToast("Hata!", "Bu kişi zaten arkadaş listenizde.", "fa-triangle-exclamation");
                     return;
                 }
-                // Sonra istek zaten atılmış mı kontrol et
                 get(ref(db, `friend_requests/${targetUid}/${currentUser.uid}`)).then(reqSnap => {
                     if (reqSnap.exists()) {
                         showToast("Uyarı", "Bu kişiye zaten istek gönderdin, yanıtını bekle.", "fa-clock");
                         return;
                     }
-                    // Sorun yoksa isteği at
                     set(ref(db, `friend_requests/${targetUid}/${currentUser.uid}`), {
                         uid: currentUser.uid, username: currentUserData.username, timestamp: Date.now()
                     }).then(() => showToast("Başarılı", `${targetName} kişisine istek gönderildi!`, "fa-check-circle"));
@@ -638,7 +664,6 @@
                 badge.innerText = count; badge.classList.remove('hidden');
                 navBadge.innerText = count; navBadge.classList.remove('hidden');
                 
-                // İstek bildirimi
                 if(count > 0 && activeTabId !== 'friends-tab') {
                     showToast("Yeni İstek", "Biri sana arkadaşlık isteği gönderdi!", "fa-user-plus");
                 }
@@ -671,16 +696,14 @@
                             <i class="fa-solid fa-chevron-right text-[10px] text-gray-500 group-hover:text-[#d4af37]"></i>
                         </div>`;
                     
-                    // O kişinin mesajlarını arka planda dinle (bildirim için)
                     listenPrivateChatForNotifications(f.uid, f.username);
                 });
             });
         }
 
-        /* ÖZEL MESAJ BİLDİRİM DİNLEYİCİSİ */
         function listenPrivateChatForNotifications(friendUid, friendName) {
             const chatId = currentUser.uid > friendUid ? currentUser.uid + "_" + friendUid : friendUid + "_" + currentUser.uid;
-            if(counts.privateChats[chatId] === undefined) counts.privateChats[chatId] = -1; // init
+            if(counts.privateChats[chatId] === undefined) counts.privateChats[chatId] = -1;
 
             onValue(ref(db, `private_chats/${chatId}`), (snap) => {
                 if(!snap.exists()) return;
@@ -746,7 +769,7 @@
         }
 
 
-        // ------------------------- DESTEK SİSTEMİ (NEDEN BELİRTME EKLENDİ) -------------------------
+        // ------------------------- DESTEK SİSTEMİ -------------------------
         window.createNewTicket = function() {
             const now = Date.now();
             const lastTime = currentUserData.lastTicketTime || 0;
@@ -755,7 +778,7 @@
                 return;
             }
 
-            const reason = document.getElementById('ticket-reason').value; // Seçilen neden
+            const reason = document.getElementById('ticket-reason').value; 
 
             get(ref(db, 'system/ticket_count')).then(snap => {
                 let count = snap.exists() ? snap.val() : 0;
@@ -769,7 +792,7 @@
                     id: ticketId,
                     title: ticketName,
                     creatorName: currentUserData.username,
-                    reason: reason, // Nedeni kaydet
+                    reason: reason, 
                     status: 'pending',
                     timestamp: new Date().getTime()
                 }).then(() => {
@@ -826,7 +849,7 @@
             }
         }
 
-        // ------------------------- ADMİN LOGLARI & DESTEKLER -------------------------
+        // ------------------------- ADMİN LOGLARI & DESTEKLER (ÇEVRİMİÇİ GÜNCELLEMESİ) -------------------------
         function listenAdminTickets() {
             onValue(ref(db, 'tickets'), (snapshot) => {
                 const list = document.getElementById('admin-tickets-list');
@@ -850,7 +873,7 @@
             });
         }
 
-        /* ADMİN LOG SİSTEMİ YENİ */
+        /* YENİ GÜNCELLENMİŞ ADMİN LOGLARI (Canlı Aktiflik) */
         function listenAdminLogs() {
             onValue(ref(db, 'users'), (snapshot) => {
                 const list = document.getElementById('admin-logs-list');
@@ -860,10 +883,17 @@
                 
                 snapshot.forEach(c => {
                     const u = c.val();
+                    const statusDot = u.isOnline 
+                        ? '<i class="fa-solid fa-circle text-green-500 text-[8px] mr-1 animate-pulse"></i><span class="text-green-500">Çevrimiçi</span>' 
+                        : '<i class="fa-solid fa-circle text-gray-500 text-[8px] mr-1"></i><span class="text-gray-400">Çevrimdışı</span>';
+                    
                     list.innerHTML += `
                         <div class="flex justify-between items-center bg-white/5 p-2 rounded-lg mb-1 border border-white/5">
-                            <span class="text-xs font-bold ${u.role === 'admin' ? 'text-red-400' : 'text-white'}">${u.username}</span>
-                            <span class="text-[10px] text-gray-400 bg-black/50 px-2 py-1 rounded"><i class="fa-solid fa-clock mr-1 text-green-500"></i>${u.lastLogin || 'Giriş Yapmadı'}</span>
+                            <div class="flex items-center">
+                                <span class="text-xs font-bold ${u.role === 'admin' ? 'text-red-400' : 'text-white'} mr-2">${u.username}</span>
+                                <span class="text-[9px] bg-black/50 px-1.5 py-0.5 rounded flex items-center">${statusDot}</span>
+                            </div>
+                            <span class="text-[10px] text-gray-400 bg-black/50 px-2 py-1 rounded"><i class="fa-solid fa-clock mr-1 text-[#d4af37]"></i>${u.lastLogin || 'Giriş Yapmadı'}</span>
                         </div>
                     `;
                 });
@@ -934,7 +964,6 @@
         }
 
         window.playGlobalPlaylist = function() {
-            // Textarea'daki linkleri satır satır ayır
             const text = document.getElementById('admin-playlist-urls').value;
             const urls = text.split('\n').map(u => u.trim()).filter(u => u !== "");
             
@@ -953,7 +982,6 @@
                 if(!snapshot.exists()) return;
                 const state = snapshot.val();
                 
-                // Disco Modu
                 if(state.discoMode) {
                     document.body.classList.add('disco-active');
                     document.getElementById('btn-disco')?.classList.replace('from-purple-600', 'from-red-600');
@@ -964,24 +992,20 @@
                     if(document.getElementById('btn-disco')) document.getElementById('btn-disco').innerText = "🕺 DİSKO MODUNU AÇ";
                 }
 
-                // GitHub MP3 Çalma Listesi Mantığı
                 const audio = document.getElementById('global-audio-player');
                 const indicator = document.getElementById('music-indicator');
                 
                 if(state.playMusic && state.playlist && state.playlist.length > 0) {
-                    // Admin paneli yüklendiğinde textarea'yı doldur (admin için)
                     if(document.getElementById('admin-playlist-urls')) {
                         document.getElementById('admin-playlist-urls').value = state.playlist.join('\n');
                     }
 
                     localPlaylist = state.playlist;
                     
-                    // Eğer index liste dışına çıktıysa sıfırla
                     if(currentTrackIndex >= localPlaylist.length) currentTrackIndex = 0;
                     
                     const expectedSrc = localPlaylist[currentTrackIndex];
                     
-                    // Şarkı farklıysa veya durmuşsa başlat
                     if(audio.src !== expectedSrc || audio.paused) {
                         audio.src = expectedSrc;
                         audio.play().then(() => {
@@ -995,16 +1019,14 @@
             });
         }
 
-        // Çalma Listesinde şarkı bitince SIRADAKİNE geç ve loop yap
         document.getElementById('global-audio-player').onended = function() {
             if(localPlaylist.length > 0) {
-                currentTrackIndex = (currentTrackIndex + 1) % localPlaylist.length; // Sona gelince başa sarar (Loop)
+                currentTrackIndex = (currentTrackIndex + 1) % localPlaylist.length; 
                 this.src = localPlaylist[currentTrackIndex];
                 this.play().catch(e => console.log(e));
             }
         };
 
-        // Enter tuşu desteği
         window.handleChatEnter = function(event, type) {
             if (event.key === 'Enter') {
                 if (type === 'global') sendGlobalMessage();
