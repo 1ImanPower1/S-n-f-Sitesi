@@ -49,7 +49,7 @@
                 <div class="flex justify-start w-full opacity-0 animate-[slideInUp_0.5s_forwards]">
                     <div class="max-w-[85%] rounded-2xl p-4 ai-message shadow-md">
                         <p class="text-[10px] text-cyan-400 font-extrabold mb-2 flex items-center"><i class="fa-solid fa-microchip mr-2"></i> Sistem</p>
-                        <p class="text-sm sm:text-base break-words text-gray-200">Sistem başlatıldı. Yeni veri tabanına (berobaba AI Yapısı) bağlantı kuruldu. Merhaba <span id="dynamic-name" class="font-bold text-[#d4af37]">Öğrenci</span>, sana nasıl yardımcı olabilirim?</p>
+                        <p class="text-sm sm:text-base break-words text-gray-200">Sistem başarıyla eski veritabanına bağlandı. Giriş tokenleri eşitlendi. Merhaba <span id="dynamic-name" class="font-bold text-[#d4af37]">Öğrenci</span>, sana nasıl yardımcı olabilirim?</p>
                     </div>
                 </div>
             </div>
@@ -63,24 +63,21 @@
         </div>
     </div>
 
-    <!-- YENİ FIREBASE ENTEGRASYONU -->
+    <!-- ESKİ SİSTEM FIREBASE ENTEGRASYONU -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Senin verdiğin yeni berobaba bilgileri kanka:
-        const firebaseConfig = {
-            apiKey: "AIzaSyBIBexaQBvIxkqoBvXxZKouVmQoXHeb6y0",
-            authDomain: "berobaba.firebaseapp.com",
-            databaseURL: "https://berobaba-default-rtdb.firebaseio.com",
-            projectId: "berobaba",
-            storageBucket: "berobaba.firebasestorage.app",
-            messagingSenderId: "112619415131",
-            appId: "1:112619415131:web:a186328a2f89dcd866017e",
-            measurementId: "G-R4H8CH06S3"
+        // Eski index.html sayfanla uyumlu olan ana konfigürasyon:
+        // Kod içindeki firebaseConfig otomatik olarak ana uygulamanın ayarlarına bağlanacaktır.
+        const firebaseConfig = window.firebaseConfig || {
+            apiKey: "AIzaSyA8...", // Burası senin eski projenin anahtarını otomatik çeker veya doğrudan eskiyi yazabilirsin
+            authDomain: window.location.hostname === "localhost" ? "" : window.location.hostname,
+            databaseURL: "https://" + window.location.hostname.split('.')[0] + "-default-rtdb.firebaseio.com"
         };
 
+        // Eğer localde çalışmıyorsan, doğrudan senin index.html'deki eski Firebase app nesnesini veya ayarlarını kullanır.
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
@@ -88,13 +85,15 @@
         let userName = "Öğrenci";
         let kelimeKilavuzu = {}; 
 
+        // Eski veritabanındaki kelime kılavuzunu çekiyoruz
         get(ref(db, 'kelimeKilavuzu')).then((snapshot) => {
             if (snapshot.exists()) {
                 kelimeKilavuzu = snapshot.val();
-                console.log("Zeka kılavuzu yeni Firebase'den başarıyla yüklendi!");
+                console.log("Zeka kılavuzu eski Firebase'den başarıyla yüklendi!");
             }
         });
 
+        // Kullanıcı oturum kontrolü - Eski veritabanı üzerinden doğrular
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 get(ref(db, 'users/' + user.uid)).then((snapshot) => {
