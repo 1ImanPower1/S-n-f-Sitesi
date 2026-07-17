@@ -115,7 +115,6 @@
                         <div class="flex items-center space-x-3"><i class="fa-solid fa-headset w-5 text-center"></i><span>Canlı Destek</span></div>
                     </button>
                     
-                    <!-- YENİ: YAPAY ZEKA BUTONU (FARKLI HTML'E GİDER) -->
                     <a href="yapay-zeka.html" class="w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left hover:bg-cyan-900/40 text-cyan-400 hover:text-cyan-300 font-bold transition duration-200 border border-transparent hover:border-cyan-500/30">
                         <div class="flex items-center space-x-3"><i class="fa-solid fa-robot w-5 text-center animate-pulse"></i><span>Yapay Zeka (AI)</span></div>
                         <i class="fa-solid fa-external-link-alt text-[10px]"></i>
@@ -157,7 +156,7 @@
 
             <div class="flex-1 p-4 sm:p-8 overflow-y-auto max-w-7xl mx-auto w-full relative pb-20 md:pb-8">
                 
-                <!-- TAB 1: GÜNLÜK OLAYLAR (TERS ÇEVRİLDİ: YENİ EN ÜSTTE) -->
+                <!-- TAB 1: GÜNLÜK OLAYLAR (KESİN OLARAK ALT ALTA & EN YENİ EN ÜSTTE) -->
                 <section id="events-tab" class="tab-content space-y-6">
                     <div class="flex justify-between items-center bg-black/20 p-4 rounded-2xl border border-white/5">
                         <h3 class="text-xl font-extrabold flex items-center"><i class="fa-solid fa-fire text-[#d4af37] mr-3"></i> Olaylar & Duyurular</h3>
@@ -168,7 +167,7 @@
                     <div id="events-list" class="space-y-6"></div>
                 </section>
 
-                <!-- TAB 2: CANLI SOHBET (RENKLİ RANK SİSTEMLİ) -->
+                <!-- TAB 2: CANLI SOHBET -->
                 <section id="chat-tab" class="tab-content hidden flex flex-col h-[calc(100vh-140px)] md:h-[80vh]">
                     <div class="glass-card flex-1 rounded-2xl p-4 sm:p-6 flex flex-col overflow-hidden shadow-2xl relative border-t-4 border-[#d4af37]">
                         <div class="flex justify-between items-center pb-4 border-b border-white/10 mb-4">
@@ -260,7 +259,7 @@
                     </div>
                 </section>
 
-                <!-- TAB 6: ADMİN PANELİ (RANK SİSTEMLİ) -->
+                <!-- TAB 6: ADMİN PANELİ -->
                 <section id="admin-tab" class="tab-content hidden space-y-8">
                     <div class="flex items-center bg-red-900/20 p-5 rounded-2xl border border-red-500/30">
                         <i class="fa-solid fa-shield-halved text-red-500 text-3xl mr-4"></i>
@@ -480,7 +479,7 @@
             }
         }
 
-        /* ---------------- OLAYLAR (TERS ÇEVRİLDİ) ---------------- */
+        /* ---------------- OLAYLAR (GÜN İSMİ EKLENDİ VE KESİN SIRALAMA YAPILDI) ---------------- */
         window.openEventModal = () => document.getElementById('event-modal').classList.remove('hidden');
         window.closeEventModal = () => document.getElementById('event-modal').classList.add('hidden');
         
@@ -492,10 +491,27 @@
             if(!t || !c) return alert("Başlık ve detay gerekli!");
             
             btn.innerText = "Yükleniyor..."; btn.disabled = true;
+            
+            // push metodu listeye yeni bir eleman ekler, öncekileri ASLA silmez.
             const refE = push(ref(db, 'events'));
-            set(refE, { id: refE.key, title: t, content: c, imageUrl: img, author: currentUserData.username, timestamp: new Date().toLocaleString() }).then(() => {
+
+            // Gün adını içeren Türkçe tarih ayarı (Örn: 17 Temmuz 2026 Cuma, 14:30)
+            const dateOptions = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const fullDateStr = new Date().toLocaleDateString('tr-TR', dateOptions);
+
+            set(refE, { 
+                id: refE.key, 
+                title: t, 
+                content: c, 
+                imageUrl: img, 
+                author: currentUserData.username, 
+                timestamp: fullDateStr,
+                rawTime: Date.now() // Sıralamayı kusursuz yapmak için milisaniye cinsinden gizli zaman
+            }).then(() => {
                 closeEventModal(); 
-                document.getElementById('modal-event-title').value = ""; document.getElementById('modal-event-content').value = ""; document.getElementById('modal-event-image').value = ""; 
+                document.getElementById('modal-event-title').value = ""; 
+                document.getElementById('modal-event-content').value = ""; 
+                document.getElementById('modal-event-image').value = ""; 
                 showToast("Duyuruldu", "Olay panoya iğnelendi!", "fa-thumbtack");
             }).finally(() => { btn.innerText = "Yayınla"; btn.disabled = false; });
         }
@@ -507,17 +523,28 @@
                 if(!snap.exists()) return;
                 
                 let events = []; 
-                snap.forEach(c => events.push(c.val()));
-                events.reverse(); // İŞTE BURASI! Kesin olarak en yeniyi en üste alır.
+                snap.forEach(c => { events.push(c.val()); });
+                
+                // Kesin Sıralama: rawTime (Zaman) değerine göre büyükten küçüğe dizecek.
+                // Bu sayede en son eklenen olay, liste boyutu ne olursa olsun kesin olarak en üstte kalacak.
+                events.sort((a, b) => {
+                    const timeA = a.rawTime || 0;
+                    const timeB = b.rawTime || 0;
+                    return timeB - timeA;
+                });
                 
                 if (!isInitLoad.events && events.length > counts.events) {
                     const latest = events[0];
-                    if(latest.author !== currentUserData.username && activeTabId !== 'events-tab') showToast("📌 Yeni Duyuru!", `${latest.title}`, "fa-bullhorn");
+                    if(latest && latest.author !== currentUserData.username && activeTabId !== 'events-tab') {
+                        showToast("📌 Yeni Duyuru!", `${latest.title}`, "fa-bullhorn");
+                    }
                 }
                 counts.events = events.length; isInitLoad.events = false;
 
                 events.forEach(ev => {
                     let imgHtml = ev.imageUrl ? `<img src="${ev.imageUrl}" class="w-full h-40 md:h-64 object-cover rounded-xl mt-4 border border-white/10 shadow-lg">` : '';
+                    
+                    // html+= kodu her olayı alt alta başarılı bir şekilde dizer.
                     list.innerHTML += `
                         <div class="glass-card rounded-2xl p-5 md:p-8 space-y-2 shadow-2xl relative overflow-hidden group hover:bg-white/5 transition duration-300">
                             <span class="text-[10px] text-[#d4af37] bg-[#d4af37]/10 px-3 py-1.5 rounded-full font-bold border border-[#d4af37]/30">${ev.timestamp}</span>
