@@ -85,26 +85,13 @@
         const db = getDatabase(app);
 
         let userName = "Öğrenci";
-        
-        // Havuz başta boş tanımlanıyor, Firebase'den canlı olarak çekilecek
         let kelimeKilavuzu = {}; 
 
-        // --- VERİTABANINDAN DEVA-SA KELİME HAVUZUNU ÇEKME SİSTEMİ ---
         get(ref(db, 'kelimeKilavuzu')).then((snapshot) => {
             if (snapshot.exists()) {
                 kelimeKilavuzu = snapshot.val();
                 console.log("Zeka kılavuzu Firebase'den başarıyla yüklendi!");
-            } else {
-                // Firebase'de henüz data yoksa sistem çökmesin diye geçici lokal yedek
-                kelimeKilavuzu = {
-                    selamlasma: {
-                        anahtarKelimeler: ["selam", "merhaba", "sa"],
-                        cevaplar: ["Selam! Sistem aktif ama Firebase kılavuzun boş kanka."]
-                    }
-                };
             }
-        }).catch((error) => {
-            console.error("Kılavuz çekilirken hata oluştu:", error);
         });
 
         onAuthStateChanged(auth, (user) => {
@@ -120,37 +107,40 @@
             }
         });
 
-        // --- YAPAY ZEKA ANALİZ MOTORU ---
+        // --- YENİ BİRLEŞTİRİCİ Zeka MOTORU ---
         function yapayZekaCevapUret(kullaniciMesaji) {
             let temizMesaj = kullaniciMesaji.toLowerCase().replace(/[.,!?]/g, "");
             let kelimeler = temizMesaj.split(" ");
             
-            let algilananNiyet = null;
-            let enYuksekEslesme = 0;
+            let algilananNiyetler = [];
 
+            // Cümledeki tüm farklı konuları tespit et
             for (let niyet in kelimeKilavuzu) {
-                let eslesmeSayisi = 0;
                 for (let i = 0; i < kelimeler.length; i++) {
                     if (kelimeKilavuzu[niyet].anahtarKelimeler && kelimeKilavuzu[niyet].anahtarKelimeler.includes(kelimeler[i])) {
-                        eslesmeSayisi++;
+                        if(!algilananNiyetler.includes(niyet)) {
+                            algilananNiyetler.push(niyet);
+                        }
+                        break; // Aynı konuyu iki kere eklememek için döngüyü kır
                     }
-                }
-                if (eslesmeSayisi > enYuksekEslesme) {
-                    enYuksekEslesme = eslesmeSayisi;
-                    algilananNiyet = niyet;
                 }
             }
 
-            if (algilananNiyet && kelimeKilavuzu[algilananNiyet].cevaplar) {
-                let olasiCevaplar = kelimeKilavuzu[algilananNiyet].cevaplar;
-                let rastgeleSayi = Math.floor(Math.random() * olasiCevaplar.length);
-                return olasiCevaplar[rastgeleSayi];
+            // Eğer konu bulunduysa cevapları birleştir
+            if (algilananNiyetler.length > 0) {
+                let birlesikCevap = "";
+                for(let i=0; i < algilananNiyetler.length; i++) {
+                    let niyet = algilananNiyetler[i];
+                    let olasiCevaplar = kelimeKilavuzu[niyet].cevaplar;
+                    let rastgeleSayi = Math.floor(Math.random() * olasiCevaplar.length);
+                    birlesikCevap += olasiCevaplar[rastgeleSayi] + " "; // Cevapların arasına boşluk koyarak birleştir
+                }
+                return birlesikCevap.trim();
             } else {
-                return `Yazdığın "${kullaniciMesaji}" cümlesini tam analiz edemedim kanka. Kelime kılavuzuma yeni veriler ekleyerek beni eğitebilirsin!`;
+                return `Yazdığın "${kullaniciMesaji}" cümlesini tam analiz edemedim kanka. Çok fazla şey öğreniyorum, yakında bunu da kavrarım!`;
             }
         }
 
-        // --- MESAJ GÖNDERME FONKSİYONU ---
         window.sendAiMessage = function() {
             const input = document.getElementById('ai-input');
             const text = input.value.trim();
@@ -158,7 +148,6 @@
 
             const box = document.getElementById('ai-chat-box');
 
-            // Kullanıcının Mesajı
             box.innerHTML += `
                 <div class="flex justify-end w-full mt-4">
                     <div class="max-w-[85%] rounded-2xl p-4 user-message shadow-md">
@@ -170,7 +159,6 @@
             input.value = "";
             box.scrollTop = box.scrollHeight;
 
-            // Yapay Zeka Yükleniyor Efekti
             const typingId = "typing-" + Date.now();
             setTimeout(() => {
                 box.innerHTML += `
@@ -183,10 +171,8 @@
                     </div>`;
                 box.scrollTop = box.scrollHeight;
 
-                // Yapay Zeka Cevabı
                 setTimeout(() => {
                     document.getElementById(typingId).remove();
-                    
                     const aiResponse = yapayZekaCevapUret(text);
 
                     box.innerHTML += `
