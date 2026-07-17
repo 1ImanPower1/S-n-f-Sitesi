@@ -46,11 +46,10 @@
         <div class="w-full max-w-4xl glass-card rounded-3xl flex flex-col overflow-hidden shadow-2xl relative z-10 h-full">
             
             <div id="ai-chat-box" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
-                <!-- AI Karşılama -->
                 <div class="flex justify-start w-full opacity-0 animate-[slideInUp_0.5s_forwards]">
                     <div class="max-w-[85%] rounded-2xl p-4 ai-message shadow-md">
                         <p class="text-[10px] text-cyan-400 font-extrabold mb-2 flex items-center"><i class="fa-solid fa-microchip mr-2"></i> Sistem</p>
-                        <p class="text-sm sm:text-base break-words text-gray-200">Sistem başlatıldı. Veri tabanına (Sözlük & AI Yapısı) bağlantı kuruldu. Merhaba <span id="dynamic-name" class="font-bold text-[#d4af37]">Öğrenci</span>, sana nasıl yardımcı olabilirim?</p>
+                        <p class="text-sm sm:text-base break-words text-gray-200">Sistem başlatıldı. Yeni veri tabanına (berobaba AI Yapısı) bağlantı kuruldu. Merhaba <span id="dynamic-name" class="font-bold text-[#d4af37]">Öğrenci</span>, sana nasıl yardımcı olabilirim?</p>
                     </div>
                 </div>
             </div>
@@ -64,20 +63,22 @@
         </div>
     </div>
 
-    <!-- FIREBASE INTEGRASYONU -->
+    <!-- YENİ FIREBASE ENTEGRASYONU -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // Senin verdiğin yeni berobaba bilgileri kanka:
         const firebaseConfig = {
-            apiKey: "AIzaSyAIcr33ABLSw_5jPbmHH7CDAIc5GNmma_k",
-            authDomain: "mesaj-4daa5.firebaseapp.com",
-            databaseURL: "https://mesaj-4daa5-default-rtdb.firebaseio.com",
-            projectId: "mesaj-4daa5",
-            storageBucket: "mesaj-4daa5.firebasestorage.app",
-            messagingSenderId: "361724107709",
-            appId: "1:361724107709:web:4675793b1a32b51eb3d0d4"
+            apiKey: "AIzaSyBIBexaQBvIxkqoBvXxZKouVmQoXHeb6y0",
+            authDomain: "berobaba.firebaseapp.com",
+            databaseURL: "https://berobaba-default-rtdb.firebaseio.com",
+            projectId: "berobaba",
+            storageBucket: "berobaba.firebasestorage.app",
+            messagingSenderId: "112619415131",
+            appId: "1:112619415131:web:a186328a2f89dcd866017e",
+            measurementId: "G-R4H8CH06S3"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -90,7 +91,7 @@
         get(ref(db, 'kelimeKilavuzu')).then((snapshot) => {
             if (snapshot.exists()) {
                 kelimeKilavuzu = snapshot.val();
-                console.log("Zeka kılavuzu Firebase'den başarıyla yüklendi!");
+                console.log("Zeka kılavuzu yeni Firebase'den başarıyla yüklendi!");
             }
         });
 
@@ -107,33 +108,30 @@
             }
         });
 
-        // --- YENİ BİRLEŞTİRİCİ Zeka MOTORU ---
         function yapayZekaCevapUret(kullaniciMesaji) {
             let temizMesaj = kullaniciMesaji.toLowerCase().replace(/[.,!?]/g, "");
             let kelimeler = temizMesaj.split(" ");
             
             let algilananNiyetler = [];
 
-            // Cümledeki tüm farklı konuları tespit et
             for (let niyet in kelimeKilavuzu) {
                 for (let i = 0; i < kelimeler.length; i++) {
                     if (kelimeKilavuzu[niyet].anahtarKelimeler && kelimeKilavuzu[niyet].anahtarKelimeler.includes(kelimeler[i])) {
                         if(!algilananNiyetler.includes(niyet)) {
                             algilananNiyetler.push(niyet);
                         }
-                        break; // Aynı konuyu iki kere eklememek için döngüyü kır
+                        break; 
                     }
                 }
             }
 
-            // Eğer konu bulunduysa cevapları birleştir
             if (algilananNiyetler.length > 0) {
                 let birlesikCevap = "";
                 for(let i=0; i < algilananNiyetler.length; i++) {
                     let niyet = algilananNiyetler[i];
                     let olasiCevaplar = kelimeKilavuzu[niyet].cevaplar;
                     let rastgeleSayi = Math.floor(Math.random() * olasiCevaplar.length);
-                    birlesikCevap += olasiCevaplar[rastgeleSayi] + " "; // Cevapların arasına boşluk koyarak birleştir
+                    birlesikCevap += olasiCevaplar[rastgeleSayi] + " "; 
                 }
                 return birlesikCevap.trim();
             } else {
