@@ -1,1 +1,155 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>8-D Sınıfı - Yapay Zeka</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: radial-gradient(circle at top left, #051622 0%, #02040a 100%);
+            background-attachment: fixed;
+        }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+        }
+        .ai-message {
+            background: linear-gradient(to right, rgba(8, 145, 178, 0.2), rgba(6, 182, 212, 0.1));
+            border-left: 3px solid #06b6d4;
+        }
+        .user-message {
+            background: linear-gradient(to left, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-right: 3px solid #d4af37;
+        }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.5); border-radius: 10px; }
+    </style>
+</head>
+<body class="text-white min-h-screen flex flex-col font-sans antialiased overflow-hidden">
 
+    <header class="glass-card border-b border-cyan-500/20 px-6 py-4 flex justify-between items-center z-10 shadow-[0_0_20px_rgba(6,182,212,0.1)]">
+        <div class="flex items-center space-x-4">
+            <a href="index.html" class="text-cyan-400 hover:text-cyan-300 transition text-lg"><i class="fa-solid fa-arrow-left mr-2"></i> Portala Dön</a>
+        </div>
+        <div class="flex items-center space-x-3">
+            <h2 class="text-lg sm:text-xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">8-D Zeka Modülü</h2>
+            <i class="fa-solid fa-robot text-cyan-400 text-2xl animate-pulse"></i>
+        </div>
+    </header>
+
+    <div class="flex-1 flex justify-center p-4 sm:p-8 overflow-hidden relative">
+        <div class="w-full max-w-4xl glass-card rounded-3xl flex flex-col overflow-hidden shadow-2xl relative z-10">
+            <div id="ai-chat-box" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
+                <!-- AI Karşılama -->
+                <div class="flex justify-start w-full opacity-0 animate-[slideInUp_0.5s_forwards]">
+                    <div class="max-w-[85%] rounded-2xl p-4 ai-message shadow-md">
+                        <p class="text-[10px] text-cyan-400 font-extrabold mb-2 flex items-center"><i class="fa-solid fa-microchip mr-2"></i> Sistem</p>
+                        <p class="text-sm sm:text-base break-words text-gray-200">Sistem başlatıldı. Veri tabanına (Sözlük & AI Yapısı) bağlantı kuruldu. Merhaba <span id="dynamic-name" class="font-bold text-[#d4af37]">Öğrenci</span>, sana nasıl yardımcı olabilirim?</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 bg-black/40 border-t border-cyan-500/20">
+                <div class="flex space-x-3">
+                    <input type="text" id="ai-input" placeholder="Yapay zekaya bir şey sor..." class="flex-1 px-5 py-4 rounded-xl bg-white/5 border border-cyan-500/30 text-white focus:outline-none focus:border-cyan-400 transition shadow-inner" onkeypress="if(event.key === 'Enter') sendAiMessage()">
+                    <button onclick="sendAiMessage()" class="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-extrabold px-8 rounded-xl transition shadow-[0_0_15px_rgba(6,182,212,0.4)] hover:scale-105"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FIREBASE (Kullanıcıyı Tanımak İçin) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIcr33ABLSw_5jPbmHH7CDAIc5GNmma_k",
+            authDomain: "mesaj-4daa5.firebaseapp.com",
+            databaseURL: "https://mesaj-4daa5-default-rtdb.firebaseio.com",
+            projectId: "mesaj-4daa5",
+            storageBucket: "mesaj-4daa5.firebasestorage.app",
+            messagingSenderId: "361724107709",
+            appId: "1:361724107709:web:4675793b1a32b51eb3d0d4"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let userName = "Öğrenci";
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                get(ref(db, 'users/' + user.uid)).then((snapshot) => {
+                    if (snapshot.exists()) {
+                        userName = snapshot.val().username;
+                        document.getElementById('dynamic-name').innerText = userName;
+                    }
+                });
+            } else {
+                // Giriş yapmamışsa ana sayfaya at
+                window.location.href = "index.html";
+            }
+        });
+
+        window.sendAiMessage = function() {
+            const input = document.getElementById('ai-input');
+            const text = input.value.trim();
+            if(!text) return;
+
+            const box = document.getElementById('ai-chat-box');
+
+            // Kullanıcının Mesajı
+            box.innerHTML += `
+                <div class="flex justify-end w-full mt-4">
+                    <div class="max-w-[85%] rounded-2xl p-4 user-message shadow-md">
+                        <p class="text-[10px] text-[#d4af37] font-extrabold mb-2 flex items-center justify-end">${userName} <i class="fa-solid fa-user ml-2"></i></p>
+                        <p class="text-sm sm:text-base break-words text-white">${text}</p>
+                    </div>
+                </div>`;
+            
+            input.value = "";
+            box.scrollTop = box.scrollHeight;
+
+            // Yapay Zeka Yükleniyor Efekti
+            const typingId = "typing-" + Date.now();
+            setTimeout(() => {
+                box.innerHTML += `
+                    <div id="${typingId}" class="flex justify-start w-full mt-4">
+                        <div class="max-w-[85%] rounded-2xl p-4 ai-message flex items-center space-x-2">
+                            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-bounce"></div>
+                            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                            <div class="w-2 h-2 bg-cyan-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                        </div>
+                    </div>`;
+                box.scrollTop = box.scrollHeight;
+
+                // Yapay Zeka Cevabı (Burayı ileride kendi Python/Firebase Sözlük altyapına bağlayabilirsin)
+                setTimeout(() => {
+                    document.getElementById(typingId).remove();
+                    
+                    // Şimdilik sistemin kendi içinde çalışacağı varsayılan cevap
+                    const aiResponse = `Şu an yerel test modundayım dostum. GitHub üzerindeki Firebase bağlamlı Türkçe sözlük modülüm henüz tam entegre edilmediği için senin yazdığın "${text}" komutunu hafızama aldım. İleride beni kodladığında gerçek cevaplar vereceğim!`;
+
+                    box.innerHTML += `
+                        <div class="flex justify-start w-full mt-4">
+                            <div class="max-w-[85%] rounded-2xl p-4 ai-message shadow-md">
+                                <p class="text-[10px] text-cyan-400 font-extrabold mb-2 flex items-center"><i class="fa-solid fa-microchip mr-2"></i> Sistem</p>
+                                <p class="text-sm sm:text-base break-words text-gray-200">${aiResponse}</p>
+                            </div>
+                        </div>`;
+                    box.scrollTop = box.scrollHeight;
+                }, 1500);
+
+            }, 500);
+        }
+    </script>
+</body>
+</html>
