@@ -46,10 +46,11 @@
         <div class="w-full max-w-4xl glass-card rounded-3xl flex flex-col overflow-hidden shadow-2xl relative z-10 h-full">
             
             <div id="ai-chat-box" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
+                <!-- AI Karşılama -->
                 <div class="flex justify-start w-full opacity-0 animate-[slideInUp_0.5s_forwards]">
                     <div class="max-w-[85%] rounded-2xl p-4 ai-message shadow-md">
                         <p class="text-[10px] text-cyan-400 font-extrabold mb-2 flex items-center"><i class="fa-solid fa-microchip mr-2"></i> Sistem</p>
-                        <p class="text-sm sm:text-base break-words text-gray-200">Sistem başarıyla eski veritabanına bağlandı. Giriş tokenleri eşitlendi. Merhaba <span id="dynamic-name" class="font-bold text-[#d4af37]">Öğrenci</span>, sana nasıl yardımcı olabilirim?</p>
+                        <p class="text-sm sm:text-base break-words text-gray-200">Sistem başlatıldı. Veri tabanına (Sözlük & AI Yapısı) bağlantı kuruldu. Merhaba <span id="dynamic-name" class="font-bold text-[#d4af37]">Öğrenci</span>, sana nasıl yardımcı olabilirim?</p>
                     </div>
                 </div>
             </div>
@@ -63,21 +64,22 @@
         </div>
     </div>
 
-    <!-- ESKİ SİSTEM FIREBASE ENTEGRASYONU -->
+    <!-- FIREBASE INTEGRASYONU -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Eski index.html sayfanla uyumlu olan ana konfigürasyon:
-        // Kod içindeki firebaseConfig otomatik olarak ana uygulamanın ayarlarına bağlanacaktır.
-        const firebaseConfig = window.firebaseConfig || {
-            apiKey: "AIzaSyA8...", // Burası senin eski projenin anahtarını otomatik çeker veya doğrudan eskiyi yazabilirsin
-            authDomain: window.location.hostname === "localhost" ? "" : window.location.hostname,
-            databaseURL: "https://" + window.location.hostname.split('.')[0] + "-default-rtdb.firebaseio.com"
+        const firebaseConfig = {
+            apiKey: "AIzaSyAIcr33ABLSw_5jPbmHH7CDAIc5GNmma_k",
+            authDomain: "mesaj-4daa5.firebaseapp.com",
+            databaseURL: "https://mesaj-4daa5-default-rtdb.firebaseio.com",
+            projectId: "mesaj-4daa5",
+            storageBucket: "mesaj-4daa5.firebasestorage.app",
+            messagingSenderId: "361724107709",
+            appId: "1:361724107709:web:4675793b1a32b51eb3d0d4"
         };
 
-        // Eğer localde çalışmıyorsan, doğrudan senin index.html'deki eski Firebase app nesnesini veya ayarlarını kullanır.
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
@@ -85,15 +87,13 @@
         let userName = "Öğrenci";
         let kelimeKilavuzu = {}; 
 
-        // Eski veritabanındaki kelime kılavuzunu çekiyoruz
         get(ref(db, 'kelimeKilavuzu')).then((snapshot) => {
             if (snapshot.exists()) {
                 kelimeKilavuzu = snapshot.val();
-                console.log("Zeka kılavuzu eski Firebase'den başarıyla yüklendi!");
+                console.log("Zeka kılavuzu Firebase'den başarıyla yüklendi!");
             }
         });
 
-        // Kullanıcı oturum kontrolü - Eski veritabanı üzerinden doğrular
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 get(ref(db, 'users/' + user.uid)).then((snapshot) => {
@@ -107,30 +107,33 @@
             }
         });
 
+        // --- YENİ BİRLEŞTİRİCİ Zeka MOTORU ---
         function yapayZekaCevapUret(kullaniciMesaji) {
             let temizMesaj = kullaniciMesaji.toLowerCase().replace(/[.,!?]/g, "");
             let kelimeler = temizMesaj.split(" ");
             
             let algilananNiyetler = [];
 
+            // Cümledeki tüm farklı konuları tespit et
             for (let niyet in kelimeKilavuzu) {
                 for (let i = 0; i < kelimeler.length; i++) {
                     if (kelimeKilavuzu[niyet].anahtarKelimeler && kelimeKilavuzu[niyet].anahtarKelimeler.includes(kelimeler[i])) {
                         if(!algilananNiyetler.includes(niyet)) {
                             algilananNiyetler.push(niyet);
                         }
-                        break; 
+                        break; // Aynı konuyu iki kere eklememek için döngüyü kır
                     }
                 }
             }
 
+            // Eğer konu bulunduysa cevapları birleştir
             if (algilananNiyetler.length > 0) {
                 let birlesikCevap = "";
                 for(let i=0; i < algilananNiyetler.length; i++) {
                     let niyet = algilananNiyetler[i];
                     let olasiCevaplar = kelimeKilavuzu[niyet].cevaplar;
                     let rastgeleSayi = Math.floor(Math.random() * olasiCevaplar.length);
-                    birlesikCevap += olasiCevaplar[rastgeleSayi] + " "; 
+                    birlesikCevap += olasiCevaplar[rastgeleSayi] + " "; // Cevapların arasına boşluk koyarak birleştir
                 }
                 return birlesikCevap.trim();
             } else {
