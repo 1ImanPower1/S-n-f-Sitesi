@@ -30,7 +30,6 @@
         ::-webkit-scrollbar-thumb { background: rgba(6, 182, 212, 0.5); border-radius: 10px; }
     </style>
 </head>
-<!-- min-h-screen yerine h-screen yapılarak ekran tamamen kilitlendi -->
 <body class="text-white h-screen flex flex-col font-sans antialiased overflow-hidden">
 
     <header class="glass-card border-b border-cyan-500/20 px-6 py-4 flex justify-between items-center z-10 shadow-[0_0_20px_rgba(6,182,212,0.1)]">
@@ -43,11 +42,9 @@
         </div>
     </header>
 
-    <!-- Ana taşıyıcı pencereler h-full ve overflow-hidden ile sabitlendi -->
     <div class="flex-1 flex justify-center p-4 sm:p-8 overflow-hidden relative h-full">
         <div class="w-full max-w-4xl glass-card rounded-3xl flex flex-col overflow-hidden shadow-2xl relative z-10 h-full">
             
-            <!-- Mesajların aktığı pencere artık dışarı taşmaz, kendi içinde kayar -->
             <div id="ai-chat-box" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
                 <!-- AI Karşılama -->
                 <div class="flex justify-start w-full opacity-0 animate-[slideInUp_0.5s_forwards]">
@@ -67,7 +64,7 @@
         </div>
     </div>
 
-    <!-- FIREBASE VE YAPAY ZEKA MİMARİSİ -->
+    <!-- FIREBASE INTEGRASYONU -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -88,6 +85,27 @@
         const db = getDatabase(app);
 
         let userName = "Öğrenci";
+        
+        // Havuz başta boş tanımlanıyor, Firebase'den canlı olarak çekilecek
+        let kelimeKilavuzu = {}; 
+
+        // --- VERİTABANINDAN DEVA-SA KELİME HAVUZUNU ÇEKME SİSTEMİ ---
+        get(ref(db, 'kelimeKilavuzu')).then((snapshot) => {
+            if (snapshot.exists()) {
+                kelimeKilavuzu = snapshot.val();
+                console.log("Zeka kılavuzu Firebase'den başarıyla yüklendi!");
+            } else {
+                // Firebase'de henüz data yoksa sistem çökmesin diye geçici lokal yedek
+                kelimeKilavuzu = {
+                    selamlasma: {
+                        anahtarKelimeler: ["selam", "merhaba", "sa"],
+                        cevaplar: ["Selam! Sistem aktif ama Firebase kılavuzun boş kanka."]
+                    }
+                };
+            }
+        }).catch((error) => {
+            console.error("Kılavuz çekilirken hata oluştu:", error);
+        });
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -102,20 +120,7 @@
             }
         });
 
-        // --- DEVASA KELİME HAVUZU MANTIĞI ---
-        // Kanka buraya binlerce satır yazarsan kod çöker. O yüzden şimdilik temel bir yapı kurduk.
-        // Aşağıdaki "Nasıl Büyütürüz?" başlığında bunu nasıl devasalaştıracağını anlattım.
-        let kelimeKilavuzu = {
-            hal_hatir: {
-                anahtarKelimeler: ["nasılsın", "nasıl", "naber", "durumlar", "günün", "geçiyor"],
-                cevaplar: ["İyiyim, bugün çok güzel geçiyor! Sen nasılsın?", "Harikayım dostum, sorduğun için çok teşekkürler!", "Bomba gibiyim, seninle sohbet etmek harika!"]
-            },
-            selamlasma: {
-                anahtarKelimeler: ["selam", "merhaba", "sa", "hey", "günaydın"],
-                cevaplar: ["Selam! Sana nasıl yardımcı olabilirim?", "Merhaba! Hoş geldin kanka.", "Aleykümselam, seni dinliyorum."]
-            }
-        };
-
+        // --- YAPAY ZEKA ANALİZ MOTORU ---
         function yapayZekaCevapUret(kullaniciMesaji) {
             let temizMesaj = kullaniciMesaji.toLowerCase().replace(/[.,!?]/g, "");
             let kelimeler = temizMesaj.split(" ");
@@ -126,7 +131,7 @@
             for (let niyet in kelimeKilavuzu) {
                 let eslesmeSayisi = 0;
                 for (let i = 0; i < kelimeler.length; i++) {
-                    if (kelimeKilavuzu[niyet].anahtarKelimeler.includes(kelimeler[i])) {
+                    if (kelimeKilavuzu[niyet].anahtarKelimeler && kelimeKilavuzu[niyet].anahtarKelimeler.includes(kelimeler[i])) {
                         eslesmeSayisi++;
                     }
                 }
@@ -136,15 +141,16 @@
                 }
             }
 
-            if (algilananNiyet) {
+            if (algilananNiyet && kelimeKilavuzu[algilananNiyet].cevaplar) {
                 let olasiCevaplar = kelimeKilavuzu[algilananNiyet].cevaplar;
                 let rastgeleSayi = Math.floor(Math.random() * olasiCevaplar.length);
                 return olasiCevaplar[rastgeleSayi];
             } else {
-                return `Yazdığın "${kullaniciMesaji}" cümlesindeki kelimeleri tam analiz edemedim kanka, kılavuzumu geliştirmelisin!`;
+                return `Yazdığın "${kullaniciMesaji}" cümlesini tam analiz edemedim kanka. Kelime kılavuzuma yeni veriler ekleyerek beni eğitebilirsin!`;
             }
         }
 
+        // --- MESAJ GÖNDERME FONKSİYONU ---
         window.sendAiMessage = function() {
             const input = document.getElementById('ai-input');
             const text = input.value.trim();
