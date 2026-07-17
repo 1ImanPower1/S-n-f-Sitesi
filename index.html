@@ -2,299 +2,303 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>8-D Sınıf Portalı - Birlikte Daha Güçlüyüz</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
         body {
-            background: radial-gradient(circle at center, #0f1c3f 0%, #050814 100%);
+            background: radial-gradient(circle at top right, #0f1c3f 0%, #02040a 100%);
             background-attachment: fixed;
             transition: filter 0.5s ease;
         }
-        .gold-glow { text-shadow: 0 0 12px rgba(212, 175, 55, 0.6); }
+        .gold-glow { text-shadow: 0 0 15px rgba(212, 175, 55, 0.8); }
+        .glass-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
         .btn-gold {
-            background: linear-gradient(135deg, #b8860b 0%, #d4af37 100%);
-            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #b8860b 0%, #ffd700 50%, #d4af37 100%);
+            background-size: 200% auto;
+            transition: all 0.4s ease;
         }
         .btn-gold:hover {
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+            background-position: right center;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
             transform: translateY(-2px);
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.02); }
-        ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.3); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.6); }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+        ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.5); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(212, 175, 55, 0.8); }
 
-        /* Mesaj ve Bildirim Animasyonları */
-        @keyframes slideInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes slideInRight {
-            from { opacity: 0; transform: translateX(100%); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-        .msg-anim { animation: slideInUp 0.3s ease-out forwards; }
+        /* Animasyonlar */
+        @keyframes slideInUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideInRight { from { opacity: 0; transform: translateX(100%); } to { opacity: 1; transform: translateX(0); } }
+        .msg-anim { animation: slideInUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         .toast-anim { animation: slideInRight 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-
-        .admin-msg-box {
-            border: 1px solid rgba(212, 175, 55, 0.5);
-            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
-            background: linear-gradient(145deg, #1a1500, #332700);
-        }
 
         @keyframes discoFever {
             0% { filter: hue-rotate(0deg) brightness(1.2); }
-            25% { filter: hue-rotate(90deg) brightness(1.5); }
-            50% { filter: hue-rotate(180deg) brightness(1.2); }
-            75% { filter: hue-rotate(270deg) brightness(1.5); }
+            50% { filter: hue-rotate(180deg) brightness(1.5); }
             100% { filter: hue-rotate(360deg) brightness(1.2); }
         }
         .disco-active {
-            animation: discoFever 1.5s infinite linear !important;
+            animation: discoFever 2s infinite linear !important;
             background: radial-gradient(circle at center, #ff0055 0%, #050814 100%) !important;
         }
     </style>
 </head>
-<body class="text-white min-h-screen flex flex-col font-sans antialiased overflow-x-hidden">
+<body class="text-white min-h-screen flex flex-col font-sans antialiased overflow-x-hidden selection:bg-[#d4af37] selection:text-black">
 
-    <!-- ÖZEL BİLDİRİM (TOAST) KONTEYNERİ -->
-    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col space-y-3 pointer-events-none w-72"></div>
+    <!-- BİLDİRİM (TOAST) -->
+    <div id="toast-container" class="fixed top-4 right-4 z-[9999] flex flex-col space-y-3 pointer-events-none w-72 md:w-80"></div>
 
-    <!-- Müzik Oynatıcı -->
     <audio id="global-audio-player"></audio>
 
-    <!-- 1. GİRİŞ & KAYIT EKRANI -->
+    <!-- 1. GİRİŞ EKRANI -->
     <div id="auth-container" class="min-h-screen flex items-center justify-center p-4">
-        <div class="glass-card max-w-md w-full rounded-2xl p-8 text-center shadow-2xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-900 via-yellow-500 to-blue-900"></div>
-            <img src="logo.png" alt="8-D Logo" class="w-32 h-32 mx-auto rounded-full border-4 border-[#d4af37] shadow-lg mb-6 object-cover" onerror="this.src='https://via.placeholder.com/150/050814/d4af37?text=8-D'">
-            <h1 class="text-2xl font-bold tracking-wide">8-D Sınıf Portalı</h1>
-            <p class="text-[#d4af37] font-semibold text-xs tracking-widest uppercase mt-1 mb-6 gold-glow">Birlikte Daha Güçlüyüz</p>
+        <div class="glass-card max-w-md w-full rounded-3xl p-8 text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-900 via-[#d4af37] to-blue-900"></div>
+            <img src="logo.png" alt="8-D Logo" class="w-32 h-32 mx-auto rounded-full border-4 border-[#d4af37] shadow-[0_0_20px_rgba(212,175,55,0.4)] mb-6 object-cover hover:scale-105 transition duration-300" onerror="this.src='https://via.placeholder.com/150/02040a/d4af37?text=8-D'">
+            <h1 class="text-3xl font-extrabold tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">8-D Sınıf Portalı</h1>
+            <p class="text-[#d4af37] font-bold text-xs tracking-widest uppercase mt-2 mb-8 gold-glow">Birlikte Daha Güçlüyüz</p>
 
             <div class="space-y-4">
                 <h3 id="auth-title" class="text-lg font-semibold text-gray-300">Giriş Yap</h3>
-                <input type="text" id="reg-username" placeholder="Adın ve Soyadın" class="hidden w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-[#d4af37] transition">
-                <input type="email" id="auth-email" placeholder="E-posta adresi" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-[#d4af37] transition">
-                <input type="password" id="auth-password" placeholder="Şifre" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white placeholder-gray-400 focus:outline-none focus:border-[#d4af37] transition">
-                <button onclick="handleAuthAction()" class="btn-gold w-full py-3 rounded-lg text-black font-bold uppercase tracking-wider text-sm mt-2">Giriş Yap</button>
-                <p id="auth-toggle-text" class="text-sm text-gray-400 cursor-pointer hover:text-[#d4af37] transition underline" onclick="toggleAuthMode()">Hesabın yok mu? Kayıt Ol</p>
+                <input type="text" id="reg-username" placeholder="Adın ve Soyadın" class="hidden w-full px-5 py-3.5 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-[#d4af37] focus:bg-black/50 transition">
+                <input type="email" id="auth-email" placeholder="E-posta adresi" class="w-full px-5 py-3.5 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-[#d4af37] focus:bg-black/50 transition">
+                <input type="password" id="auth-password" placeholder="Şifre" class="w-full px-5 py-3.5 rounded-xl bg-black/30 border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:border-[#d4af37] focus:bg-black/50 transition">
+                <button onclick="handleAuthAction()" class="btn-gold w-full py-4 rounded-xl text-black font-extrabold uppercase tracking-widest text-sm mt-4 shadow-lg shadow-[#d4af37]/20">Sisteme Gir</button>
+                <p id="auth-toggle-text" class="text-sm text-gray-400 cursor-pointer hover:text-[#d4af37] transition underline mt-4" onclick="toggleAuthMode()">Hesabın yok mu? Kayıt Ol</p>
             </div>
         </div>
     </div>
 
-    <!-- 2. ANA UYGULAMA PANELİ -->
+    <!-- 2. ANA UYGULAMA -->
     <div id="app-container" class="hidden min-h-screen flex flex-col md:flex-row relative">
         
         <!-- YAN PANEL -->
-        <aside id="sidebar-menu" class="hidden md:flex w-full md:w-64 glass-card border-r border-white/5 flex-col justify-between p-4 h-screen sticky top-0 z-40 max-md:fixed max-md:bg-[#050814]/95 max-md:backdrop-blur-xl">
+        <aside id="sidebar-menu" class="hidden md:flex w-full md:w-72 glass-card border-r border-white/5 flex-col justify-between p-5 h-screen sticky top-0 z-40 max-md:fixed max-md:bg-[#02040a]/95 max-md:backdrop-blur-3xl transition-all duration-300">
             <div>
                 <div class="md:hidden flex justify-end mb-2">
-                    <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white text-xl"><i class="fa-solid fa-times"></i></button>
+                    <button onclick="toggleMobileMenu()" class="text-gray-400 hover:text-white text-2xl"><i class="fa-solid fa-times"></i></button>
                 </div>
                 
-                <div class="flex items-center space-x-3 pb-4 mb-6 border-b border-white/10">
-                    <img src="logo.png" alt="8-D Logo" class="w-12 h-12 rounded-full border-2 border-[#d4af37] object-cover" onerror="this.src='https://via.placeholder.com/150/050814/d4af37?text=8-D'">
+                <div class="flex items-center space-x-4 pb-5 mb-6 border-b border-white/10">
+                    <img src="logo.png" alt="8-D Logo" class="w-14 h-14 rounded-full border-2 border-[#d4af37] shadow-[0_0_10px_rgba(212,175,55,0.3)] object-cover" onerror="this.src='https://via.placeholder.com/150/02040a/d4af37?text=8-D'">
                     <div>
-                        <h4 id="user-display-name" class="font-bold text-sm text-white">Yükleniyor...</h4>
-                        <span id="user-role-badge" class="text-[10px] bg-[#d4af37]/20 text-[#d4af37] px-2 py-0.5 rounded font-semibold uppercase">Üye</span>
+                        <h4 id="user-display-name" class="font-bold text-base text-white">Yükleniyor...</h4>
+                        <span id="user-role-badge" class="text-[10px] bg-white/10 text-gray-300 px-2 py-1 rounded font-bold uppercase tracking-wider">Üye</span>
                     </div>
                 </div>
 
-                <nav class="space-y-1">
-                    <button onclick="switchTab('events-tab')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left bg-white/5 text-[#d4af37] font-medium transition duration-200">
-                        <i class="fa-solid fa-calendar-day w-5"></i><span>Günlük Olaylar</span>
+                <nav class="space-y-2">
+                    <button onclick="switchTab('events-tab')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-left bg-gradient-to-r from-white/10 to-transparent text-[#d4af37] border-l-2 border-[#d4af37] font-semibold transition duration-200 shadow-sm">
+                        <i class="fa-solid fa-calendar-day w-5 text-center"></i><span>Günlük Olaylar</span>
                     </button>
-                    <button onclick="switchTab('chat-tab')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left hover:bg-white/5 text-gray-400 hover:text-white transition duration-200">
-                        <i class="fa-solid fa-comments w-5"></i><span>Canlı Sohbet</span>
+                    <button onclick="switchTab('chat-tab')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-left hover:bg-white/5 text-gray-400 hover:text-white font-medium transition duration-200">
+                        <i class="fa-solid fa-comments w-5 text-center"></i><span>Canlı Sohbet</span>
                     </button>
-                    <button onclick="switchTab('friends-tab')" class="tab-btn w-full flex items-center justify-between px-4 py-3 rounded-lg text-left hover:bg-white/5 text-gray-400 hover:text-white transition duration-200">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-user-group w-5"></i><span>Arkadaşlar</span></div>
-                        <span id="friend-req-count" class="hidden bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">0</span>
+                    <button onclick="switchTab('friends-tab')" class="tab-btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left hover:bg-white/5 text-gray-400 hover:text-white font-medium transition duration-200">
+                        <div class="flex items-center space-x-3"><i class="fa-solid fa-user-group w-5 text-center"></i><span>Arkadaşlar</span></div>
+                        <span id="friend-req-count" class="hidden bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.5)]">0</span>
                     </button>
-                    <button onclick="switchTab('private-tab')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left hover:bg-white/5 text-gray-400 hover:text-white transition duration-200">
-                        <i class="fa-solid fa-paper-plane w-5"></i><span>Özel Mesajlar</span>
+                    <button onclick="switchTab('private-tab')" class="tab-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-left hover:bg-white/5 text-gray-400 hover:text-white font-medium transition duration-200">
+                        <i class="fa-solid fa-paper-plane w-5 text-center"></i><span>Özel Mesajlar</span>
                     </button>
-                    <button onclick="switchTab('support-tab')" class="tab-btn w-full flex items-center justify-between px-4 py-3 rounded-lg text-left hover:bg-white/5 text-gray-400 hover:text-white transition duration-200">
-                        <div class="flex items-center space-x-3"><i class="fa-solid fa-headset w-5"></i><span>Canlı Destek</span></div>
+                    <button onclick="switchTab('support-tab')" class="tab-btn w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left hover:bg-white/5 text-gray-400 hover:text-white font-medium transition duration-200">
+                        <div class="flex items-center space-x-3"><i class="fa-solid fa-headset w-5 text-center"></i><span>Canlı Destek</span></div>
                     </button>
                     
-                    <button id="admin-menu-btn" onclick="switchTab('admin-tab')" class="hidden tab-btn w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left hover:bg-white/5 text-red-400 hover:text-red-300 transition duration-200">
-                        <i class="fa-solid fa-user-shield w-5"></i><span>Admin Paneli</span>
+                    <!-- YENİ: YAPAY ZEKA BUTONU (FARKLI HTML'E GİDER) -->
+                    <a href="yapay-zeka.html" class="w-full flex items-center justify-between px-4 py-3.5 rounded-xl text-left hover:bg-cyan-900/40 text-cyan-400 hover:text-cyan-300 font-bold transition duration-200 border border-transparent hover:border-cyan-500/30">
+                        <div class="flex items-center space-x-3"><i class="fa-solid fa-robot w-5 text-center animate-pulse"></i><span>Yapay Zeka (AI)</span></div>
+                        <i class="fa-solid fa-external-link-alt text-[10px]"></i>
+                    </a>
+
+                    <div class="h-px bg-white/10 w-full my-2"></div>
+
+                    <button id="admin-menu-btn" onclick="switchTab('admin-tab')" class="hidden tab-btn w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl text-left hover:bg-red-900/30 text-red-400 font-bold transition duration-200">
+                        <i class="fa-solid fa-user-shield w-5 text-center"></i><span>Admin Paneli</span>
                     </button>
                 </nav>
             </div>
-            <div class="pt-4 border-t border-white/10 text-center space-y-2 mt-4">
-                <div id="music-indicator" class="hidden animate-pulse text-xs text-[#d4af37] font-bold mb-2">🎵 Çalma Listesi Devrede</div>
-                <p class="text-[11px] text-gray-400">Son Giriş: <span id="last-login-time" class="text-white">-</span></p>
-                <button onclick="logout()" class="w-full py-2 bg-red-950/40 hover:bg-red-900/60 border border-red-800/30 text-red-200 text-xs font-semibold rounded-lg transition">
-                    Güvenli Çıkış <i class="fa-solid fa-sign-out-alt ml-1"></i>
+            <div class="pt-4 mt-auto">
+                <div id="music-indicator" class="hidden flex items-center justify-center space-x-2 bg-black/40 py-2 rounded-lg mb-3 border border-white/5">
+                    <i class="fa-solid fa-compact-disc animate-spin text-[#d4af37]"></i>
+                    <span class="text-[10px] text-[#d4af37] font-bold tracking-widest uppercase">Radyo Aktif</span>
+                </div>
+                <button onclick="logout()" class="w-full py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 text-sm font-bold rounded-xl transition duration-300 flex items-center justify-center shadow-lg">
+                    Güvenli Çıkış <i class="fa-solid fa-right-from-bracket ml-2"></i>
                 </button>
             </div>
         </aside>
 
         <!-- ANA İÇERİK -->
         <main class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-            <header class="glass-card border-b border-white/5 px-4 sm:px-6 py-4 flex justify-between items-center z-10">
-                <div class="flex items-center space-x-3">
-                    <button class="md:hidden text-[#d4af37] text-2xl mr-2" onclick="toggleMobileMenu()">
-                        <i class="fa-solid fa-bars"></i>
-                    </button>
-                    <img src="logo.png" class="w-10 h-10 sm:w-14 sm:h-14 rounded-full border-2 border-[#d4af37] shadow-lg object-cover hidden sm:block" onerror="this.style.display='none'" alt="">
+            <!-- ÜST BİLGİ -->
+            <header class="glass-card border-b border-white/5 px-4 sm:px-8 py-4 flex justify-between items-center z-10 sticky top-0 rounded-none md:rounded-bl-2xl">
+                <div class="flex items-center space-x-4">
+                    <button class="md:hidden text-[#d4af37] text-2xl mr-2" onclick="toggleMobileMenu()"><i class="fa-solid fa-bars"></i></button>
                     <div>
-                        <h2 class="text-lg sm:text-xl font-bold tracking-wide">8-D SINIFI</h2>
-                        <p class="text-[10px] sm:text-xs text-[#d4af37] font-medium tracking-widest gold-glow">PORTALI</p>
+                        <h2 class="text-xl sm:text-2xl font-extrabold tracking-wide">8-D SINIFI</h2>
+                        <p class="text-[10px] sm:text-xs text-[#d4af37] font-bold tracking-[0.3em] gold-glow uppercase">Portalı</p>
                     </div>
                 </div>
                 <div class="text-right">
-                    <p class="text-xs sm:text-sm text-gray-300 font-medium">Hoş geldin, <span id="header-user-name" class="text-[#d4af37] font-semibold">Öğrenci</span>!</p>
+                    <p class="text-xs sm:text-sm text-gray-400 font-medium bg-black/40 px-4 py-2 rounded-full border border-white/5">Hoş geldin, <span id="header-user-name" class="text-white font-bold">Öğrenci</span></p>
                 </div>
             </header>
 
-            <div class="flex-1 p-4 sm:p-6 overflow-y-auto max-w-6xl mx-auto w-full relative">
+            <div class="flex-1 p-4 sm:p-8 overflow-y-auto max-w-7xl mx-auto w-full relative pb-20 md:pb-8">
                 
-                <!-- TAB 1: GÜNLÜK OLAYLAR -->
+                <!-- TAB 1: GÜNLÜK OLAYLAR (TERS ÇEVRİLDİ: YENİ EN ÜSTTE) -->
                 <section id="events-tab" class="tab-content space-y-6">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-lg font-bold border-l-4 border-[#d4af37] pl-3">📅 Olaylar & Duyurular</h3>
-                        <button id="add-event-btn" onclick="openEventModal()" class="hidden btn-gold text-black text-xs font-bold px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg">
+                    <div class="flex justify-between items-center bg-black/20 p-4 rounded-2xl border border-white/5">
+                        <h3 class="text-xl font-extrabold flex items-center"><i class="fa-solid fa-fire text-[#d4af37] mr-3"></i> Olaylar & Duyurular</h3>
+                        <button id="add-event-btn" onclick="openEventModal()" class="hidden btn-gold text-black text-sm font-bold px-5 py-2.5 rounded-xl shadow-lg">
                             Yeni Ekle <i class="fa-solid fa-plus ml-1"></i>
                         </button>
                     </div>
                     <div id="events-list" class="space-y-6"></div>
                 </section>
 
-                <!-- TAB 2: CANLI SOHBET -->
-                <section id="chat-tab" class="tab-content hidden flex flex-col h-full max-h-[75vh]">
-                    <div class="glass-card flex-1 rounded-xl p-4 flex flex-col overflow-hidden">
-                        <div class="flex justify-between items-center pb-3 border-b border-white/5 mb-3">
-                            <span class="font-bold text-sm"><i class="fa-solid fa-circle text-green-500 animate-pulse mr-2"></i>Sınıf Geneli Sohbet</span>
+                <!-- TAB 2: CANLI SOHBET (RENKLİ RANK SİSTEMLİ) -->
+                <section id="chat-tab" class="tab-content hidden flex flex-col h-[calc(100vh-140px)] md:h-[80vh]">
+                    <div class="glass-card flex-1 rounded-2xl p-4 sm:p-6 flex flex-col overflow-hidden shadow-2xl relative border-t-4 border-[#d4af37]">
+                        <div class="flex justify-between items-center pb-4 border-b border-white/10 mb-4">
+                            <span class="font-extrabold text-sm sm:text-base flex items-center">
+                                <span class="relative flex h-3 w-3 mr-3"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span></span>
+                                Global Sınıf Sohbeti
+                            </span>
                         </div>
-                        <div id="global-chat-box" class="flex-1 overflow-y-auto space-y-4 mb-4 pr-2"></div>
-                        <div class="flex space-x-2">
-                            <input type="text" id="global-chat-input" placeholder="Mesaj yaz..." class="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#d4af37]" onkeypress="handleChatEnter(event, 'global')">
-                            <button onclick="sendGlobalMessage()" class="btn-gold text-black font-bold px-4 sm:px-6 rounded-lg"><i class="fa-solid fa-paper-plane"></i></button>
+                        <div id="global-chat-box" class="flex-1 overflow-y-auto space-y-5 mb-4 pr-3 pb-2 scroll-smooth"></div>
+                        <div class="flex space-x-3 bg-black/40 p-2 rounded-2xl border border-white/10">
+                            <input type="text" id="global-chat-input" placeholder="Sınıfa bir şeyler yaz..." class="flex-1 px-4 py-3 rounded-xl bg-transparent text-white focus:outline-none" onkeypress="handleChatEnter(event, 'global')">
+                            <button onclick="sendGlobalMessage()" class="btn-gold text-black font-bold px-6 rounded-xl hover:scale-105 transition"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </section>
 
                 <!-- TAB 3: ARKADAŞLAR -->
-                <section id="friends-tab" class="tab-content hidden space-y-6 pb-10">
-                    <h3 class="text-lg font-bold border-l-4 border-[#d4af37] pl-3">👥 Kişiler & İstekler</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="glass-card rounded-xl p-6 space-y-4">
-                            <h4 class="font-bold text-sm border-b border-white/5 pb-2">Sınıftaki Kişiler</h4>
-                            <div id="all-users-list" class="space-y-2 max-h-80 overflow-y-auto pr-2"></div>
+                <section id="friends-tab" class="tab-content hidden space-y-6">
+                    <h3 class="text-xl font-extrabold flex items-center"><i class="fa-solid fa-users text-[#d4af37] mr-3"></i> Kişiler & İstekler</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="glass-card rounded-2xl p-6 space-y-4">
+                            <h4 class="font-bold text-sm text-gray-300 border-b border-white/10 pb-3">Sınıftaki Kişiler</h4>
+                            <div id="all-users-list" class="space-y-3 max-h-[50vh] overflow-y-auto pr-2"></div>
                         </div>
-                        <div class="glass-card rounded-xl p-6 space-y-4 border-t-2 border-red-500/50">
-                            <h4 class="font-bold text-sm border-b border-white/5 pb-2 flex justify-between">Gelen İstekler <span id="req-count-badge" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full hidden">0</span></h4>
-                            <div id="friend-requests-list" class="space-y-2 max-h-80 overflow-y-auto pr-2">
-                                <p class="text-xs text-gray-500">Bekleyen istek yok.</p>
-                            </div>
+                        <div class="glass-card rounded-2xl p-6 space-y-4 border-t-2 border-red-500/50 relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-red-500/10 blur-3xl rounded-full"></div>
+                            <h4 class="font-bold text-sm text-gray-300 border-b border-white/10 pb-3 flex justify-between items-center relative z-10">
+                                Gelen İstekler <span id="req-count-badge" class="bg-red-500 text-white text-[10px] px-2.5 py-1 rounded-full hidden font-bold">0</span>
+                            </h4>
+                            <div id="friend-requests-list" class="space-y-3 max-h-[50vh] overflow-y-auto pr-2 relative z-10"></div>
                         </div>
                     </div>
                 </section>
 
                 <!-- TAB 4: ÖZEL MESAJLAR -->
-                <section id="private-tab" class="tab-content hidden flex flex-col md:flex-row h-full max-h-[75vh] gap-4">
-                    <div class="w-full md:w-1/3 glass-card rounded-xl p-4 flex flex-col h-48 md:h-full overflow-hidden shrink-0">
-                        <h4 class="font-bold text-sm pb-3 border-b border-white/5 mb-3">Arkadaşlarım</h4>
+                <section id="private-tab" class="tab-content hidden flex flex-col md:flex-row h-[calc(100vh-140px)] md:h-[80vh] gap-6">
+                    <div class="w-full md:w-1/3 glass-card rounded-2xl p-5 flex flex-col h-48 md:h-full overflow-hidden shrink-0">
+                        <h4 class="font-bold text-sm text-gray-300 pb-3 border-b border-white/10 mb-4">Arkadaşlarım</h4>
                         <div id="user-list-private" class="flex-1 overflow-y-auto space-y-2 pr-2"></div>
                     </div>
-                    <div class="flex-1 glass-card rounded-xl p-4 flex flex-col overflow-hidden">
-                        <div class="pb-3 border-b border-white/5 mb-3 flex items-center">
-                            <div id="private-chat-header" class="font-bold text-sm text-gray-400">Sohbet seçin...</div>
+                    <div class="flex-1 glass-card rounded-2xl p-5 flex flex-col overflow-hidden shadow-2xl relative">
+                        <div class="pb-4 border-b border-white/10 mb-4 flex items-center">
+                            <div id="private-chat-header" class="font-bold text-sm text-gray-400 flex items-center"><i class="fa-solid fa-lock text-[#d4af37] mr-3"></i> <span>Sohbet seçin...</span></div>
                         </div>
-                        <div id="private-chat-box" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-2"></div>
-                        <div class="flex space-x-2">
-                            <input type="text" id="private-chat-input" disabled placeholder="Sohbet seçin..." class="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-[#d4af37] disabled:opacity-50" onkeypress="handleChatEnter(event, 'private')">
-                            <button id="private-chat-send-btn" disabled onclick="sendPrivateMessage()" class="btn-gold text-black font-bold px-4 sm:px-6 rounded-lg disabled:opacity-50"><i class="fa-solid fa-paper-plane"></i></button>
+                        <div id="private-chat-box" class="flex-1 overflow-y-auto space-y-4 mb-4 pr-3 scroll-smooth"></div>
+                        <div class="flex space-x-3 bg-black/40 p-2 rounded-2xl border border-white/10">
+                            <input type="text" id="private-chat-input" disabled placeholder="Önce bir arkadaş seç..." class="flex-1 px-4 py-3 rounded-xl bg-transparent text-white focus:outline-none disabled:opacity-50" onkeypress="handleChatEnter(event, 'private')">
+                            <button id="private-chat-send-btn" disabled onclick="sendPrivateMessage()" class="btn-gold text-black font-bold px-6 rounded-xl disabled:opacity-50 transition"><i class="fa-solid fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </section>
 
                 <!-- TAB 5: CANLI DESTEK -->
-                <section id="support-tab" class="tab-content hidden flex flex-col h-full max-h-[75vh]">
-                    <div class="glass-card flex-1 rounded-xl p-4 sm:p-6 flex flex-col overflow-hidden border-t-4 border-blue-500 relative">
-                        <div id="support-creation-screen" class="absolute inset-0 bg-[#050814]/95 z-10 flex flex-col items-center justify-center p-6 text-center">
-                            <i class="fa-solid fa-headset text-5xl sm:text-6xl text-blue-500 mb-4"></i>
-                            <h3 class="text-lg sm:text-xl font-bold mb-2">Destek Talebi Oluştur</h3>
-                            <div class="w-full max-w-sm mt-4 space-y-3 text-left">
-                                <label class="text-xs text-gray-400">Talep Konusu / Nedeni:</label>
-                                <select id="ticket-reason" class="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-500">
-                                    <option value="Sistemsel Hata (Bug)" class="bg-[#050814]">Sistemsel Hata (Bug)</option>
-                                    <option value="Şikayet (Kullanıcı Bildirimi)" class="bg-[#050814]">Şikayet (Kullanıcı Bildirimi)</option>
-                                    <option value="Öneri / Fikir" class="bg-[#050814]">Öneri / Fikir</option>
-                                    <option value="Diğer" class="bg-[#050814]">Diğer</option>
+                <section id="support-tab" class="tab-content hidden flex flex-col h-[calc(100vh-140px)] md:h-[80vh]">
+                    <div class="glass-card flex-1 rounded-2xl p-4 sm:p-6 flex flex-col overflow-hidden border-t-4 border-blue-500 relative shadow-[0_0_30px_rgba(59,130,246,0.1)]">
+                        <div id="support-creation-screen" class="absolute inset-0 bg-[#02040a]/95 backdrop-blur-md z-10 flex flex-col items-center justify-center p-6 text-center">
+                            <div class="w-20 h-20 bg-blue-500/20 rounded-full flex items-center justify-center mb-6">
+                                <i class="fa-solid fa-headset text-4xl text-blue-400"></i>
+                            </div>
+                            <h3 class="text-2xl font-extrabold mb-2">Destek Talebi Oluştur</h3>
+                            <p class="text-sm text-gray-400 mb-6 max-w-sm">Bir sorun mu var? Adminler sana yardım etmek için burada.</p>
+                            <div class="w-full max-w-sm space-y-4 text-left">
+                                <label class="text-xs text-gray-400 font-bold ml-1">Konu / Neden:</label>
+                                <select id="ticket-reason" class="w-full px-5 py-4 rounded-xl bg-black/50 border border-white/10 text-white focus:outline-none focus:border-blue-500 transition shadow-inner">
+                                    <option value="Sistemsel Hata (Bug)">Sistemsel Hata (Bug)</option>
+                                    <option value="Şikayet (Kullanıcı Bildirimi)">Şikayet (Kullanıcı Bildirimi)</option>
+                                    <option value="Öneri / Fikir">Öneri / Fikir</option>
+                                    <option value="Diğer">Diğer</option>
                                 </select>
-                                <button onclick="createNewTicket()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded-lg transition text-base shadow-lg shadow-blue-500/30">Talebi Gönder</button>
+                                <button onclick="createNewTicket()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-extrabold py-4 rounded-xl transition shadow-lg shadow-blue-500/25 mt-2">Talebi Gönder</button>
                             </div>
                         </div>
 
                         <div id="support-active-screen" class="hidden flex-1 flex flex-col h-full w-full">
-                            <div class="flex justify-between items-center pb-3 border-b border-white/5 mb-3">
+                            <div class="flex justify-between items-center pb-4 border-b border-white/10 mb-4 bg-blue-900/10 -mx-6 -mt-6 p-6 rounded-t-2xl">
                                 <div class="flex items-center">
-                                    <button id="admin-ticket-back-btn" onclick="backToAdminTickets()" class="hidden text-[10px] bg-gray-600 hover:bg-gray-500 text-white px-2 py-1 rounded mr-2"><i class="fa-solid fa-arrow-left"></i></button>
-                                    <span id="active-ticket-title" class="font-bold text-sm text-blue-400">Destek</span>
-                                    <span id="active-ticket-status" class="ml-2 text-[10px] px-2 py-0.5 rounded">Bekliyor</span>
+                                    <button id="admin-ticket-back-btn" onclick="backToAdminTickets()" class="hidden text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1.5 rounded-lg mr-3 transition"><i class="fa-solid fa-arrow-left"></i></button>
+                                    <span id="active-ticket-title" class="font-extrabold text-sm sm:text-base text-blue-400">Destek</span>
+                                    <span id="active-ticket-status" class="ml-3 text-[10px] px-2.5 py-1 rounded-md font-bold">Bekliyor</span>
                                 </div>
-                                <button onclick="closeMyTicket()" class="text-[10px] bg-red-500/20 text-red-400 hover:bg-red-500/40 px-3 py-1.5 rounded">Kapat</button>
+                                <button onclick="closeMyTicket()" class="text-xs bg-red-500/10 text-red-400 hover:bg-red-500/30 border border-red-500/20 px-4 py-2 rounded-lg font-bold transition">Kapat</button>
                             </div>
-                            <div id="support-chat-box" class="flex-1 overflow-y-auto space-y-3 mb-4 pr-2"></div>
-                            <div class="flex space-x-2">
-                                <input type="text" id="support-chat-input" placeholder="Mesaj yaz..." class="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-white focus:outline-none focus:border-blue-500" onkeypress="handleChatEnter(event, 'support')">
-                                <button onclick="sendTicketMessage()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-4 sm:px-6 rounded-lg transition"><i class="fa-solid fa-paper-plane"></i></button>
+                            <div id="support-chat-box" class="flex-1 overflow-y-auto space-y-4 mb-4 pr-3 scroll-smooth"></div>
+                            <div class="flex space-x-3 bg-black/40 p-2 rounded-2xl border border-white/10">
+                                <input type="text" id="support-chat-input" placeholder="Mesaj yaz..." class="flex-1 px-4 py-3 rounded-xl bg-transparent text-white focus:outline-none" onkeypress="handleChatEnter(event, 'support')">
+                                <button onclick="sendTicketMessage()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 rounded-xl transition"><i class="fa-solid fa-paper-plane"></i></button>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <!-- TAB 6: ADMİN PANELİ -->
-                <section id="admin-tab" class="tab-content hidden space-y-6 pb-10">
-                    <h3 class="text-lg font-bold border-l-4 border-red-500 pl-3">🛡️ Kurucu Kontrol Paneli</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        
+                <!-- TAB 6: ADMİN PANELİ (RANK SİSTEMLİ) -->
+                <section id="admin-tab" class="tab-content hidden space-y-8">
+                    <div class="flex items-center bg-red-900/20 p-5 rounded-2xl border border-red-500/30">
+                        <i class="fa-solid fa-shield-halved text-red-500 text-3xl mr-4"></i>
+                        <div>
+                            <h3 class="text-xl font-extrabold text-white">Kurucu Kontrol Paneli</h3>
+                            <p class="text-xs text-red-300">Sistemin tüm yönetimi bu sekmede.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Destek Talepleri -->
-                        <div class="glass-card rounded-xl p-6 space-y-4 border-t-2 border-blue-500">
-                            <h4 class="font-bold text-sm border-b border-white/5 pb-2">🎫 Destek Talepleri</h4>
-                            <div id="admin-tickets-list" class="space-y-2 max-h-48 overflow-y-auto">
-                                <p class="text-xs text-gray-500">Talep yok.</p>
-                            </div>
+                        <div class="glass-card rounded-2xl p-6 space-y-4 border-t-2 border-blue-500">
+                            <h4 class="font-bold text-sm text-gray-300 border-b border-white/10 pb-3"><i class="fa-solid fa-ticket mr-2 text-blue-400"></i> Açık Destek Talepleri</h4>
+                            <div id="admin-tickets-list" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div>
                         </div>
 
-                        <!-- Admin Logları (YENİ ÇEVRİMİÇİ SİSTEMİ) -->
-                        <div class="glass-card rounded-xl p-6 space-y-4 border-t-2 border-green-500">
-                            <h4 class="font-bold text-sm border-b border-white/5 pb-2 flex items-center justify-between">
-                                📊 Kullanıcı Son Görülme & Aktiflik
+                        <!-- Kullanıcı Yönetimi & Rank Verme -->
+                        <div class="glass-card rounded-2xl p-6 space-y-4 border-t-2 border-green-500">
+                            <h4 class="font-bold text-sm text-gray-300 border-b border-white/10 pb-3 flex items-center justify-between">
+                                <span><i class="fa-solid fa-users-gear mr-2 text-green-400"></i> Üye Yönetimi & Yetkiler</span>
                             </h4>
-                            <div id="admin-logs-list" class="space-y-2 max-h-48 overflow-y-auto pr-2">
-                                <p class="text-xs text-gray-500">Yükleniyor...</p>
-                            </div>
+                            <div id="admin-logs-list" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div>
                         </div>
 
-                        <!-- Eğlence & GitHub Çalma Listesi -->
-                        <div class="glass-card rounded-xl p-6 space-y-4 border-t-2 border-[#d4af37] md:col-span-2">
-                            <h4 class="font-bold text-sm border-b border-white/5 pb-2 flex items-center justify-between">
-                                🎧 Sınıf Radyosu (GitHub Çalma Listesi)
-                                <span class="text-[9px] text-[#d4af37] bg-[#d4af37]/10 px-2 py-0.5 rounded">Oto-Tekrar (Loop) Modu Aktif</span>
+                        <!-- Eğlence & Çalma Listesi -->
+                        <div class="glass-card rounded-2xl p-6 space-y-4 border-t-2 border-[#d4af37] md:col-span-2">
+                            <h4 class="font-bold text-sm text-gray-300 border-b border-white/10 pb-3 flex items-center justify-between">
+                                <span><i class="fa-solid fa-music mr-2 text-[#d4af37]"></i> Sınıf Radyosu (GitHub)</span>
+                                <span class="text-[9px] text-black font-bold bg-[#d4af37] px-2.5 py-1 rounded-md">Oto-Tekrar (Loop)</span>
                             </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
-                                    <button id="btn-disco" onclick="toggleDiscoMode()" class="w-full py-3 mb-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 font-bold rounded-lg transition shadow-lg text-sm">🕺 DİSKO MODUNU AÇ/KAPAT</button>
-                                    <p class="text-xs text-gray-400 mb-2">MP3 linklerini alt alta yapıştırın. Sistem listeyi sırayla çalacak ve bitince başa saracaktır.</p>
-                                    <textarea id="admin-playlist-urls" placeholder="https://raw.githubusercontent.com/.../sarki1.mp3&#10;https://raw.githubusercontent.com/.../sarki2.mp3" class="w-full px-4 py-3 text-xs rounded-lg bg-black/50 border border-white/20 text-white focus:outline-none focus:border-[#d4af37] h-32 resize-none"></textarea>
+                                    <button id="btn-disco" onclick="toggleDiscoMode()" class="w-full py-4 mb-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 font-extrabold rounded-xl transition shadow-[0_0_20px_rgba(168,85,247,0.4)] text-sm tracking-wider">🕺 DİSKO MODUNU AÇ/KAPAT</button>
+                                    <textarea id="admin-playlist-urls" placeholder="MP3 linklerini alt alta yapıştırın..." class="w-full px-5 py-4 text-xs rounded-xl bg-black/60 border border-white/10 text-white focus:outline-none focus:border-[#d4af37] h-32 resize-none shadow-inner"></textarea>
                                 </div>
-                                <div class="flex flex-col justify-end space-y-2">
-                                    <button onclick="playGlobalPlaylist()" class="bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg transition shadow-lg"><i class="fa-solid fa-play mr-2"></i> Listeyi Başlat / Güncelle</button>
-                                    <button onclick="stopGlobalMusic()" class="bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-lg transition"><i class="fa-solid fa-stop mr-2"></i> Yayını Durdur</button>
+                                <div class="flex flex-col justify-end space-y-3">
+                                    <button onclick="playGlobalPlaylist()" class="bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 text-white font-extrabold py-4 rounded-xl transition shadow-lg shadow-green-500/20"><i class="fa-solid fa-play mr-2"></i> Listeyi Yayına Ver</button>
+                                    <button onclick="stopGlobalMusic()" class="bg-red-600 hover:bg-red-500 text-white font-extrabold py-4 rounded-xl transition shadow-lg"><i class="fa-solid fa-stop mr-2"></i> Yayını Durdur</button>
                                 </div>
                             </div>
                         </div>
@@ -305,25 +309,26 @@
     </div>
 
     <!-- OLAY MODAL -->
-    <div id="event-modal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-        <div class="glass-card max-w-md w-full rounded-2xl p-6 space-y-4 shadow-2xl relative">
-            <h3 class="text-lg font-bold">Yeni Sınıf Olayı Paylaş</h3>
-            <input type="text" id="modal-event-title" placeholder="Başlık girin..." class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white mb-1 focus:outline-none focus:border-[#d4af37]">
-            <input type="url" id="modal-event-image" placeholder="Görsel URL (İsteğe Bağlı, resim linki yapıştır)" class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white mb-1 text-xs focus:outline-none">
-            <textarea id="modal-event-content" rows="4" placeholder="Detaylar..." class="w-full px-4 py-2.5 rounded-lg bg-white/5 border border-white/10 text-white resize-none focus:outline-none focus:border-[#d4af37]"></textarea>
-            <div class="flex justify-end space-x-2 pt-2">
-                <button onclick="closeEventModal()" class="px-4 py-2 bg-white/5 rounded-lg text-sm font-medium hover:bg-white/10">İptal</button>
-                <button onclick="saveEvent(event)" class="btn-gold text-black text-sm font-bold px-4 py-2 rounded-lg">Yayınla</button>
+    <div id="event-modal" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="glass-card max-w-lg w-full rounded-3xl p-8 space-y-5 shadow-2xl relative border border-white/10">
+            <h3 class="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-[#d4af37] to-white">Sınıfa Duyur</h3>
+            <input type="text" id="modal-event-title" placeholder="Başlık girin..." class="w-full px-5 py-3.5 rounded-xl bg-black/50 border border-white/10 text-white mb-2 focus:outline-none focus:border-[#d4af37] transition">
+            <input type="url" id="modal-event-image" placeholder="Görsel URL (İsteğe Bağlı Resim Linki)" class="w-full px-5 py-3.5 rounded-xl bg-black/50 border border-white/10 text-white mb-2 text-sm focus:outline-none transition focus:border-[#d4af37]">
+            <textarea id="modal-event-content" rows="4" placeholder="Olayın detayları..." class="w-full px-5 py-3.5 rounded-xl bg-black/50 border border-white/10 text-white resize-none focus:outline-none focus:border-[#d4af37] transition"></textarea>
+            <div class="flex justify-end space-x-3 pt-4">
+                <button onclick="closeEventModal()" class="px-6 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-sm font-bold transition">İptal</button>
+                <button onclick="saveEvent(event)" class="btn-gold text-black text-sm font-extrabold px-8 py-3 rounded-xl">Yayınla</button>
             </div>
         </div>
     </div>
 
-    <!-- onDisconnect eklendi! -->
+    <!-- FİREBASE & SCRİPTLER -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getDatabase, ref, set, update, get, onValue, push, remove, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // Senin mevcut firebase ayarların (Aynen kaldı)
         const firebaseConfig = {
             apiKey: "AIzaSyAIcr33ABLSw_5jPbmHH7CDAIc5GNmma_k",
             authDomain: "mesaj-4daa5.firebaseapp.com",
@@ -357,24 +362,21 @@
 
         window.showToast = function(title, desc, icon="fa-bell") {
             const toast = document.createElement('div');
-            toast.className = 'glass-card p-3 sm:p-4 rounded-xl shadow-lg border-l-4 border-[#d4af37] text-white toast-anim pointer-events-auto flex items-start space-x-3 bg-[#050814]/90';
-            toast.innerHTML = `<i class="fa-solid ${icon} text-[#d4af37] mt-1"></i><div class="flex-1"><h4 class="font-bold text-xs sm:text-sm leading-tight">${title}</h4><p class="text-[10px] sm:text-xs text-gray-300 mt-1 line-clamp-2">${desc}</p></div>`;
-            
-            const container = document.getElementById('toast-container');
-            container.appendChild(toast);
-            
+            toast.className = 'glass-card p-4 rounded-xl shadow-2xl border-l-4 border-[#d4af37] text-white toast-anim pointer-events-auto flex items-start space-x-3 bg-[#02040a]/95';
+            toast.innerHTML = `<i class="fa-solid ${icon} text-[#d4af37] mt-1 text-lg"></i><div class="flex-1"><h4 class="font-extrabold text-sm leading-tight">${title}</h4><p class="text-[11px] text-gray-300 mt-1.5 line-clamp-2">${desc}</p></div>`;
+            document.getElementById('toast-container').appendChild(toast);
             setTimeout(() => {
                 toast.style.animation = 'slideInRight 0.4s reverse forwards';
                 setTimeout(() => toast.remove(), 400);
             }, 4000);
         }
 
-        // ------------------------- AUTH & ÇEVRİMİÇİ SİSTEMİ -------------------------
+        /* ---------------- AUTH ---------------- */
         window.toggleAuthMode = function() {
             isSignUpMode = !isSignUpMode;
             document.getElementById('auth-title').innerText = isSignUpMode ? "Hesap Oluştur" : "Giriş Yap";
             document.getElementById('reg-username').classList.toggle('hidden', !isSignUpMode);
-            document.querySelector('#auth-container button').innerText = isSignUpMode ? "Kayıt Ol" : "Giriş Yap";
+            document.querySelector('#auth-container button').innerText = isSignUpMode ? "Aramıza Katıl" : "Sisteme Gir";
             document.getElementById('auth-toggle-text').innerText = isSignUpMode ? "Zaten hesabın var mı? Giriş Yap" : "Hesabın yok mu? Kayıt Ol";
         }
         
@@ -387,7 +389,7 @@
                 if(!displayName) return alert("Adınızı girin.");
                 createUserWithEmailAndPassword(auth, email, password).then((cred) => {
                     set(ref(db, 'users/' + cred.user.uid), {
-                        uid: cred.user.uid, username: displayName, email: email, role: "user", lastLogin: new Date().toLocaleString()
+                        uid: cred.user.uid, username: displayName, email: email, role: "user", rank: "Üye", lastLogin: new Date().toLocaleString()
                     }).then(() => location.reload());
                 }).catch(err => alert("Hata: " + err.message));
             } else {
@@ -403,20 +405,16 @@
                 get(ref(db, 'users/' + user.uid)).then((snapshot) => {
                     if (snapshot.exists()) {
                         currentUserData = snapshot.val();
+                        if(!currentUserData.rank) currentUserData.rank = "Üye"; // Rank kontrolü
                         setupDashboard();
                         
-                        // YENİ EKLENEN ÇEVRİMİÇİ (AKTİFLİK) KONTROLÜ
                         const connectedRef = ref(db, '.info/connected');
                         onValue(connectedRef, (snap) => {
                             if (snap.val() === true) {
                                 const statusRef = ref(db, `users/${user.uid}/isOnline`);
                                 const lastLoginRef = ref(db, `users/${user.uid}/lastLogin`);
-                                
-                                // Çıkış yapınca/İnternet kopunca
                                 onDisconnect(statusRef).set(false);
                                 onDisconnect(lastLoginRef).set(new Date().toLocaleString());
-                                
-                                // Girdiğinde
                                 set(statusRef, true);
                                 update(lastLoginRef, new Date().toLocaleString());
                             }
@@ -436,24 +434,24 @@
             document.getElementById('app-container').classList.remove('hidden');
             document.getElementById('user-display-name').innerText = currentUserData.username;
             document.getElementById('header-user-name').innerText = currentUserData.username;
-            document.getElementById('last-login-time').innerText = currentUserData.lastLogin || new Date().toLocaleString();
 
+            let roleBadge = document.getElementById('user-role-badge');
             if(currentUserData.role === 'admin') {
-                document.getElementById('user-role-badge').innerText = "Kurucu";
-                document.getElementById('user-role-badge').classList.add('bg-red-500/20', 'text-red-400');
+                roleBadge.innerText = "Kurucu";
+                roleBadge.className = "text-[10px] bg-red-500/20 text-red-400 px-2 py-1 rounded font-bold uppercase tracking-wider border border-red-500/30";
                 document.getElementById('admin-menu-btn').classList.remove('hidden');
                 document.getElementById('add-event-btn').classList.remove('hidden');
                 listenAdminTickets();
                 listenAdminLogs(); 
+            } else {
+                roleBadge.innerText = currentUserData.rank || "Üye";
+                if(currentUserData.rank === 'Asistan') roleBadge.className = "text-[10px] bg-purple-500/20 text-purple-400 px-2 py-1 rounded font-bold uppercase border border-purple-500/30";
+                if(currentUserData.rank === 'Altın') roleBadge.className = "text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-1 rounded font-bold uppercase border border-yellow-500/30";
+                if(currentUserData.rank === 'Gümüş') roleBadge.className = "text-[10px] bg-gray-400/20 text-gray-300 px-2 py-1 rounded font-bold uppercase border border-gray-400/30";
+                if(currentUserData.rank === 'Bronz') roleBadge.className = "text-[10px] bg-orange-500/20 text-orange-400 px-2 py-1 rounded font-bold uppercase border border-orange-500/30";
             }
 
-            listenEvents();
-            listenGlobalChat();
-            listenUsersForFriends();
-            listenFriendRequests();
-            listenMyFriends();
-            listenGlobalState();
-            checkMyTicket();
+            listenEvents(); listenGlobalChat(); listenUsersForFriends(); listenFriendRequests(); listenMyFriends(); listenGlobalState(); checkMyTicket();
         }
 
         window.switchTab = function(tabId) {
@@ -461,27 +459,28 @@
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
             document.getElementById(tabId).classList.remove('hidden');
             document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('bg-white/5', 'text-[#d4af37]');
-                btn.classList.add('text-gray-400', 'hover:text-white');
+                if(!btn.id.includes('admin')) {
+                    btn.classList.remove('bg-gradient-to-r', 'from-white/10', 'to-transparent', 'text-[#d4af37]', 'border-l-2', 'border-[#d4af37]', 'font-semibold');
+                    btn.classList.add('text-gray-400', 'hover:text-white', 'font-medium');
+                }
             });
-            event.currentTarget.classList.add('bg-white/5', 'text-[#d4af37]');
-            event.currentTarget.classList.remove('text-gray-400', 'hover:text-white');
             
-            if(window.innerWidth < 768) {
-                document.getElementById('sidebar-menu').classList.add('hidden');
-                document.getElementById('sidebar-menu').classList.remove('flex');
+            if(event && event.currentTarget && !event.currentTarget.id.includes('admin')) {
+                event.currentTarget.classList.add('bg-gradient-to-r', 'from-white/10', 'to-transparent', 'text-[#d4af37]', 'border-l-2', 'border-[#d4af37]', 'font-semibold');
+                event.currentTarget.classList.remove('text-gray-400', 'hover:text-white', 'font-medium');
             }
+            
+            if(window.innerWidth < 768) { document.getElementById('sidebar-menu').classList.add('hidden'); document.getElementById('sidebar-menu').classList.remove('flex'); }
 
-            if(tabId === 'chat-tab' || tabId === 'support-tab' || tabId === 'private-tab') {
+            if(['chat-tab', 'support-tab', 'private-tab'].includes(tabId)) {
                 setTimeout(() => {
-                    const box = tabId === 'chat-tab' ? document.getElementById('global-chat-box') : 
-                                (tabId === 'support-tab' ? document.getElementById('support-chat-box') : document.getElementById('private-chat-box'));
+                    const box = tabId === 'chat-tab' ? document.getElementById('global-chat-box') : (tabId === 'support-tab' ? document.getElementById('support-chat-box') : document.getElementById('private-chat-box'));
                     if(box) box.scrollTop = box.scrollHeight;
                 }, 100);
             }
         }
 
-        // ------------------------- GÜNLÜK OLAYLAR (FİXLENDİ & GÜÇLENDİRİLDİ) -------------------------
+        /* ---------------- OLAYLAR (TERS ÇEVRİLDİ) ---------------- */
         window.openEventModal = () => document.getElementById('event-modal').classList.remove('hidden');
         window.closeEventModal = () => document.getElementById('event-modal').classList.add('hidden');
         
@@ -490,33 +489,15 @@
             const t = document.getElementById('modal-event-title').value.trim();
             const c = document.getElementById('modal-event-content').value.trim();
             const img = document.getElementById('modal-event-image').value.trim();
+            if(!t || !c) return alert("Başlık ve detay gerekli!");
             
-            if(!t || !c) return alert("Lütfen başlık ve detay alanlarını doldurun!");
-            
-            const oldText = btn.innerText;
-            btn.innerText = "Yükleniyor...";
-            btn.disabled = true;
-
+            btn.innerText = "Yükleniyor..."; btn.disabled = true;
             const refE = push(ref(db, 'events'));
-            set(refE, { 
-                id: refE.key, 
-                title: t, 
-                content: c, 
-                imageUrl: img, 
-                author: currentUserData.username, 
-                timestamp: new Date().toLocaleString() 
-            }).then(() => {
+            set(refE, { id: refE.key, title: t, content: c, imageUrl: img, author: currentUserData.username, timestamp: new Date().toLocaleString() }).then(() => {
                 closeEventModal(); 
-                document.getElementById('modal-event-title').value = "";
-                document.getElementById('modal-event-content').value = "";
-                document.getElementById('modal-event-image').value = ""; 
-                showToast("Başarılı", "Yeni olay başarıyla eklendi!", "fa-check");
-            }).catch(err => {
-                alert("Hata oluştu: " + err.message);
-            }).finally(() => {
-                btn.innerText = oldText;
-                btn.disabled = false;
-            });
+                document.getElementById('modal-event-title').value = ""; document.getElementById('modal-event-content').value = ""; document.getElementById('modal-event-image').value = ""; 
+                showToast("Duyuruldu", "Olay panoya iğnelendi!", "fa-thumbtack");
+            }).finally(() => { btn.innerText = "Yayınla"; btn.disabled = false; });
         }
         
         function listenEvents() {
@@ -526,38 +507,39 @@
                 if(!snap.exists()) return;
                 
                 let events = []; 
-                snap.forEach(c => events.unshift(c.val()));
+                snap.forEach(c => events.push(c.val()));
+                events.reverse(); // İŞTE BURASI! Kesin olarak en yeniyi en üste alır.
                 
                 if (!isInitLoad.events && events.length > counts.events) {
                     const latest = events[0];
-                    if(latest.author !== currentUserData.username && activeTabId !== 'events-tab') {
-                        showToast("📌 Yeni Duyuru!", `${latest.title}`, "fa-bullhorn");
-                    }
+                    if(latest.author !== currentUserData.username && activeTabId !== 'events-tab') showToast("📌 Yeni Duyuru!", `${latest.title}`, "fa-bullhorn");
                 }
-                counts.events = events.length;
-                isInitLoad.events = false;
+                counts.events = events.length; isInitLoad.events = false;
 
                 events.forEach(ev => {
-                    let imgHtml = ev.imageUrl ? `<img src="${ev.imageUrl}" class="w-full h-32 sm:h-48 object-cover rounded-lg mb-3 shadow-md border border-white/10 mt-3">` : '';
+                    let imgHtml = ev.imageUrl ? `<img src="${ev.imageUrl}" class="w-full h-40 md:h-64 object-cover rounded-xl mt-4 border border-white/10 shadow-lg">` : '';
                     list.innerHTML += `
-                        <div class="glass-card rounded-xl p-4 sm:p-6 space-y-2 shadow-lg relative overflow-hidden">
-                            <span class="text-[10px] text-[#d4af37] bg-[#d4af37]/10 px-2 py-1 rounded-full">${ev.timestamp}</span>
-                            <h4 class="text-base sm:text-lg font-bold mt-2">${ev.title}</h4>
+                        <div class="glass-card rounded-2xl p-5 md:p-8 space-y-2 shadow-2xl relative overflow-hidden group hover:bg-white/5 transition duration-300">
+                            <span class="text-[10px] text-[#d4af37] bg-[#d4af37]/10 px-3 py-1.5 rounded-full font-bold border border-[#d4af37]/30">${ev.timestamp}</span>
+                            <h4 class="text-xl md:text-2xl font-extrabold mt-4 text-white group-hover:text-[#d4af37] transition">${ev.title}</h4>
                             ${imgHtml}
-                            <p class="text-gray-300 text-xs sm:text-sm leading-relaxed mt-2">${ev.content}</p>
-                            <p class="text-[10px] sm:text-[11px] text-gray-400 border-t border-white/5 pt-2 mt-3">Paylaşan: ${ev.author}</p>
+                            <p class="text-gray-300 text-sm md:text-base leading-relaxed mt-4 font-medium">${ev.content}</p>
+                            <div class="border-t border-white/10 pt-4 mt-6 flex items-center">
+                                <i class="fa-solid fa-user-edit text-gray-500 text-xs mr-2"></i>
+                                <p class="text-[11px] text-gray-400 font-bold tracking-wider uppercase">Paylaşan: ${ev.author}</p>
+                            </div>
                         </div>`;
                 });
             });
         }
 
-        // ------------------------- SOHBETLER & ARKADAŞLIK -------------------------
+        /* ---------------- RANK'Lİ SOHBET ---------------- */
         window.sendGlobalMessage = function() {
             const input = document.getElementById('global-chat-input');
             const text = input.value.trim();
             if(!text) return;
             set(push(ref(db, 'global_chat')), {
-                senderId: currentUser.uid, senderName: currentUserData.username, role: currentUserData.role,
+                senderId: currentUser.uid, senderName: currentUserData.username, role: currentUserData.role, rank: currentUserData.rank || 'Üye',
                 text: text, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             }).then(() => input.value = "");
         }
@@ -573,43 +555,56 @@
                     const msg = child.val();
                     lastMsg = msg;
                     const isMe = msg.senderId === currentUser.uid;
-                    const isAdmin = msg.role === 'admin';
                     const msgDiv = document.createElement('div');
                     msgDiv.className = `flex ${isMe ? 'justify-end' : 'justify-start'} w-full msg-anim`;
-                    let bgClass = isMe ? 'bg-[#d4af37] text-black rounded-tr-none' : 'bg-white/5 text-white rounded-tl-none border border-white/5';
+                    
+                    let bgClass = isMe ? 'bg-gradient-to-br from-[#d4af37] to-yellow-600 text-black rounded-tr-sm shadow-[0_4px_15px_rgba(212,175,55,0.2)]' : 'bg-black/50 text-white rounded-tl-sm border border-white/10';
                     let nameColor = isMe ? 'text-black/70' : 'text-gray-400';
-                    let adminBadge = isAdmin ? `<span class="text-[9px] bg-[#d4af37] text-black px-1.5 py-0.5 rounded-md ml-1 shadow-sm">👑 Kurucu</span>` : "";
-                    if (isAdmin) { bgClass = "admin-msg-box text-white rounded-xl " + (isMe ? 'rounded-tr-none' : 'rounded-tl-none'); nameColor = "text-[#d4af37]"; }
-                    msgDiv.innerHTML = `<div class="max-w-[85%] sm:max-w-[70%] rounded-2xl p-3 ${bgClass}"><p class="text-[9px] sm:text-[10px] ${nameColor} font-bold flex items-center mb-0.5">${msg.senderName} ${adminBadge}</p><p class="text-xs sm:text-sm break-all">${msg.text}</p></div>`;
+                    let rankBadge = "";
+
+                    // Rank Tasarımları
+                    if(msg.role === 'admin') { 
+                        bgClass = "bg-gradient-to-r from-red-700 to-red-900 text-white shadow-[0_4px_15px_rgba(220,38,38,0.3)] " + (isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'); 
+                        nameColor = "text-red-200"; 
+                        rankBadge = `<span class="text-[9px] bg-red-500 text-white px-1.5 py-0.5 rounded ml-1 shadow">👑 Kurucu</span>`; 
+                    } else if (msg.rank === 'Asistan') {
+                        if(!isMe) bgClass = "bg-gradient-to-r from-purple-900/50 to-purple-800/50 border border-purple-500/30 text-white rounded-tl-sm";
+                        nameColor = "text-purple-300";
+                        rankBadge = `<span class="text-[9px] bg-purple-500/30 text-purple-200 px-1.5 py-0.5 rounded ml-1 border border-purple-500/50">🛠️ Asistan</span>`;
+                    } else if (msg.rank === 'Altın') {
+                        if(!isMe) bgClass = "bg-gradient-to-r from-yellow-900/50 to-yellow-800/50 border border-yellow-500/30 text-white rounded-tl-sm";
+                        nameColor = "text-yellow-300";
+                        rankBadge = `<span class="text-[9px] bg-yellow-500/30 text-yellow-200 px-1.5 py-0.5 rounded ml-1 border border-yellow-500/50">🏆 Altın</span>`;
+                    } else if (msg.rank === 'Gümüş') {
+                        nameColor = "text-gray-300";
+                        rankBadge = `<span class="text-[9px] bg-gray-500/30 text-gray-200 px-1.5 py-0.5 rounded ml-1 border border-gray-400/50">🥈 Gümüş</span>`;
+                    } else if (msg.rank === 'Bronz') {
+                        nameColor = "text-orange-300";
+                        rankBadge = `<span class="text-[9px] bg-orange-700/40 text-orange-200 px-1.5 py-0.5 rounded ml-1 border border-orange-500/50">🥉 Bronz</span>`;
+                    }
+
+                    msgDiv.innerHTML = `<div class="max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 ${bgClass}"><p class="text-[10px] sm:text-xs ${nameColor} font-extrabold flex items-center mb-1.5">${msg.senderName} ${rankBadge}</p><p class="text-sm sm:text-base break-all font-medium leading-snug">${msg.text}</p></div>`;
                     box.appendChild(msgDiv);
                 });
 
                 if (!isInitLoad.globalChat && snapshot.size > counts.globalChat && lastMsg) {
-                    if(lastMsg.senderId !== currentUser.uid && activeTabId !== 'chat-tab') {
-                        showToast("Sınıf Sohbeti", `${lastMsg.senderName}: ${lastMsg.text}`, "fa-comments");
-                    }
+                    if(lastMsg.senderId !== currentUser.uid && activeTabId !== 'chat-tab') showToast("Sınıf Sohbeti", `${lastMsg.senderName}: ${lastMsg.text}`, "fa-comments");
                 }
-                counts.globalChat = snapshot.size;
-                isInitLoad.globalChat = false;
-                
+                counts.globalChat = snapshot.size; isInitLoad.globalChat = false;
                 box.scrollTop = box.scrollHeight;
             });
         }
 
+        /* ---------------- ARKADAŞLIK ---------------- */
         function listenUsersForFriends() {
             onValue(ref(db, 'users'), (snapshot) => {
-                const list = document.getElementById('all-users-list');
-                list.innerHTML = "";
+                const list = document.getElementById('all-users-list'); list.innerHTML = "";
                 if(!snapshot.exists()) return;
                 snapshot.forEach(c => {
-                    const u = c.val();
-                    if(u.uid === currentUser.uid) return;
-                    list.innerHTML += `
-                        <div class="flex justify-between items-center bg-white/5 p-3 rounded-lg mb-2 border border-white/5 hover:bg-white/10 transition">
-                            <div>
-                                <p class="text-sm font-bold text-white">${u.username}</p>
-                            </div>
-                            <button onclick="sendFriendRequest('${u.uid}', '${u.username}')" class="text-[10px] btn-gold text-black px-3 py-1.5 rounded font-bold transition shadow-md">İstek At</button>
+                    const u = c.val(); if(u.uid === currentUser.uid) return;
+                    list.innerHTML += `<div class="flex justify-between items-center bg-black/40 p-3.5 rounded-xl mb-3 border border-white/5 hover:border-[#d4af37]/30 transition group">
+                            <div><p class="text-sm font-bold text-white group-hover:text-[#d4af37] transition">${u.username}</p></div>
+                            <button onclick="sendFriendRequest('${u.uid}', '${u.username}')" class="text-[10px] btn-gold text-black px-4 py-2 rounded-lg font-bold shadow-md">İstek At</button>
                         </div>`;
                 });
             });
@@ -617,103 +612,66 @@
 
         window.sendFriendRequest = function(targetUid, targetName) {
             get(ref(db, `friends/${currentUser.uid}/${targetUid}`)).then(snap => {
-                if (snap.exists()) {
-                    showToast("Hata!", "Bu kişi zaten arkadaş listenizde.", "fa-triangle-exclamation");
-                    return;
-                }
+                if (snap.exists()) return showToast("Zaten Ekli", "Bu kişi arkadaş listenizde.", "fa-info-circle");
                 get(ref(db, `friend_requests/${targetUid}/${currentUser.uid}`)).then(reqSnap => {
-                    if (reqSnap.exists()) {
-                        showToast("Uyarı", "Bu kişiye zaten istek gönderdin, yanıtını bekle.", "fa-clock");
-                        return;
-                    }
-                    set(ref(db, `friend_requests/${targetUid}/${currentUser.uid}`), {
-                        uid: currentUser.uid, username: currentUserData.username, timestamp: Date.now()
-                    }).then(() => showToast("Başarılı", `${targetName} kişisine istek gönderildi!`, "fa-check-circle"));
+                    if (reqSnap.exists()) return showToast("Uyarı", "Zaten istek gönderdin.", "fa-clock");
+                    set(ref(db, `friend_requests/${targetUid}/${currentUser.uid}`), { uid: currentUser.uid, username: currentUserData.username, timestamp: Date.now() })
+                    .then(() => showToast("Gitti!", `${targetName} kişisine istek attın.`, "fa-paper-plane"));
                 });
             });
         }
 
         function listenFriendRequests() {
             onValue(ref(db, `friend_requests/${currentUser.uid}`), (snapshot) => {
-                const list = document.getElementById('friend-requests-list');
-                const badge = document.getElementById('req-count-badge');
-                const navBadge = document.getElementById('friend-req-count');
+                const list = document.getElementById('friend-requests-list'); const badge = document.getElementById('req-count-badge'); const navBadge = document.getElementById('friend-req-count');
                 list.innerHTML = "";
-                
-                if(!snapshot.exists()) {
-                    badge.classList.add('hidden');
-                    navBadge.classList.add('hidden');
-                    list.innerHTML = '<p class="text-xs text-gray-500">Bekleyen istek yok.</p>';
-                    return;
-                }
+                if(!snapshot.exists()) { badge.classList.add('hidden'); navBadge.classList.add('hidden'); list.innerHTML = '<p class="text-xs text-gray-500">Kafan rahat, bekleyen istek yok.</p>'; return; }
                 
                 let count = 0;
                 snapshot.forEach(c => {
-                    const req = c.val();
-                    count++;
-                    list.innerHTML += `
-                        <div class="flex flex-col space-y-2 bg-white/5 p-3 rounded-lg mb-2 border border-blue-500/30">
-                            <p class="text-sm font-bold text-white">${req.username} seni eklemek istiyor!</p>
-                            <div class="flex space-x-2">
-                                <button onclick="acceptFriend('${req.uid}', '${req.username}')" class="flex-1 bg-green-600 hover:bg-green-500 text-white text-[10px] py-1.5 rounded font-bold transition">Kabul Et</button>
-                                <button onclick="rejectFriend('${req.uid}')" class="flex-1 bg-red-600 hover:bg-red-500 text-white text-[10px] py-1.5 rounded font-bold transition">Reddet</button>
-                            </div>
-                        </div>`;
+                    const req = c.val(); count++;
+                    list.innerHTML += `<div class="flex flex-col space-y-3 bg-red-900/20 p-4 rounded-xl mb-3 border border-red-500/30">
+                            <p class="text-sm font-extrabold text-white">${req.username} arkadaş olmak istiyor!</p>
+                            <div class="flex space-x-3">
+                                <button onclick="acceptFriend('${req.uid}', '${req.username}')" class="flex-1 bg-green-600 hover:bg-green-500 text-white text-xs py-2 rounded-lg font-bold transition shadow-lg shadow-green-500/20">Kabul Et</button>
+                                <button onclick="rejectFriend('${req.uid}')" class="flex-1 bg-gray-600 hover:bg-gray-500 text-white text-xs py-2 rounded-lg font-bold transition">Reddet</button>
+                            </div></div>`;
                 });
-                
-                badge.innerText = count; badge.classList.remove('hidden');
-                navBadge.innerText = count; navBadge.classList.remove('hidden');
-                
-                if(count > 0 && activeTabId !== 'friends-tab') {
-                    showToast("Yeni İstek", "Biri sana arkadaşlık isteği gönderdi!", "fa-user-plus");
-                }
+                badge.innerText = count; badge.classList.remove('hidden'); navBadge.innerText = count; navBadge.classList.remove('hidden');
+                if(count > 0 && activeTabId !== 'friends-tab') showToast("Yeni İstek", "Biri sana arkadaşlık isteği gönderdi!", "fa-user-plus");
             });
         }
 
-        window.acceptFriend = function(targetUid, targetName) {
-            update(ref(db, `friends/${currentUser.uid}/${targetUid}`), { uid: targetUid, username: targetName });
-            update(ref(db, `friends/${targetUid}/${currentUser.uid}`), { uid: currentUser.uid, username: currentUserData.username });
-            rejectFriend(targetUid); 
-            showToast("Başarılı", `${targetName} artık arkadaşın!`, "fa-handshake");
+        window.acceptFriend = function(uid, name) {
+            update(ref(db, `friends/${currentUser.uid}/${uid}`), { uid: uid, username: name });
+            update(ref(db, `friends/${uid}/${currentUser.uid}`), { uid: currentUser.uid, username: currentUserData.username });
+            rejectFriend(uid); showToast("Kanka Oldunuz!", `${name} artık arkadaşın.`, "fa-handshake");
         }
-        window.rejectFriend = function(targetUid) {
-            remove(ref(db, `friend_requests/${currentUser.uid}/${targetUid}`));
-        }
+        window.rejectFriend = function(uid) { remove(ref(db, `friend_requests/${currentUser.uid}/${uid}`)); }
 
         function listenMyFriends() {
             onValue(ref(db, `friends/${currentUser.uid}`), (snapshot) => {
-                const list = document.getElementById('user-list-private');
-                list.innerHTML = "";
-                if(!snapshot.exists()) {
-                    list.innerHTML = '<p class="text-xs text-gray-500 p-2">Henüz arkadaşın yok.</p>';
-                    return;
-                }
+                const list = document.getElementById('user-list-private'); list.innerHTML = "";
+                if(!snapshot.exists()) { list.innerHTML = '<p class="text-xs text-gray-500 p-2">Henüz arkadaşın yok.</p>'; return; }
                 snapshot.forEach(c => {
                     const f = c.val();
-                    list.innerHTML += `
-                        <div onclick="openPrivateChat('${f.uid}', '${f.username}')" class="cursor-pointer bg-white/5 hover:bg-white/10 border border-white/5 p-3 rounded-lg mb-2 transition flex items-center justify-between group">
-                            <span class="font-bold text-xs sm:text-sm text-gray-200 group-hover:text-[#d4af37] transition">${f.username}</span>
-                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-500 group-hover:text-[#d4af37]"></i>
+                    list.innerHTML += `<div onclick="openPrivateChat('${f.uid}', '${f.username}')" class="cursor-pointer bg-black/40 hover:bg-white/10 border border-white/5 p-4 rounded-xl mb-2 transition flex items-center justify-between group">
+                            <span class="font-bold text-sm text-gray-300 group-hover:text-[#d4af37] transition">${f.username}</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-500 group-hover:text-[#d4af37] transform group-hover:translate-x-1 transition"></i>
                         </div>`;
-                    
                     listenPrivateChatForNotifications(f.uid, f.username);
                 });
             });
         }
 
+        /* ---------------- ÖZEL & DESTEK SOHBET FONKSİYONLARI ---------------- */
         function listenPrivateChatForNotifications(friendUid, friendName) {
             const chatId = currentUser.uid > friendUid ? currentUser.uid + "_" + friendUid : friendUid + "_" + currentUser.uid;
             if(counts.privateChats[chatId] === undefined) counts.privateChats[chatId] = -1;
-
             onValue(ref(db, `private_chats/${chatId}`), (snap) => {
-                if(!snap.exists()) return;
-                let lastMsg = null;
-                snap.forEach(c => lastMsg = c.val());
-                
+                if(!snap.exists()) return; let lastMsg = null; snap.forEach(c => lastMsg = c.val());
                 if(counts.privateChats[chatId] !== -1 && snap.size > counts.privateChats[chatId]) {
-                    if(lastMsg.senderId !== currentUser.uid && (activeTabId !== 'private-tab' || activePrivateChatUid !== friendUid)) {
-                        showToast(`Mesaj: ${friendName}`, lastMsg.text, "fa-paper-plane");
-                    }
+                    if(lastMsg.senderId !== currentUser.uid && (activeTabId !== 'private-tab' || activePrivateChatUid !== friendUid)) showToast(`DM: ${friendName}`, lastMsg.text, "fa-paper-plane");
                 }
                 counts.privateChats[chatId] = snap.size;
             });
@@ -721,319 +679,169 @@
 
         window.openPrivateChat = function(uid, name) {
             activePrivateChatUid = uid;
-            document.getElementById('private-chat-header').innerHTML = `<i class="fa-solid fa-lock text-[#d4af37] mr-2"></i> <span class="truncate">${name}</span>`;
-            document.getElementById('private-chat-input').disabled = false;
-            document.getElementById('private-chat-send-btn').disabled = false;
-            document.getElementById('private-chat-input').placeholder = "Mesaj yaz...";
-            
-            if(window.innerWidth < 768) {
-                document.getElementById('private-chat-box').scrollIntoView({behavior: "smooth"});
-            }
-            
+            document.getElementById('private-chat-header').innerHTML = `<i class="fa-solid fa-lock text-[#d4af37] mr-3"></i> <span class="truncate text-white font-extrabold">${name}</span>`;
+            document.getElementById('private-chat-input').disabled = false; document.getElementById('private-chat-send-btn').disabled = false; document.getElementById('private-chat-input').placeholder = "Ona bir mesaj gönder...";
+            if(window.innerWidth < 768) document.getElementById('private-chat-box').scrollIntoView({behavior: "smooth"});
             listenActivePrivateChat();
         }
 
         window.sendPrivateMessage = function() {
-            const input = document.getElementById('private-chat-input');
-            const text = input.value.trim();
-            if(!text || !activePrivateChatUid) return;
-            
+            const input = document.getElementById('private-chat-input'); const text = input.value.trim(); if(!text || !activePrivateChatUid) return;
             const chatId = currentUser.uid > activePrivateChatUid ? currentUser.uid + "_" + activePrivateChatUid : activePrivateChatUid + "_" + currentUser.uid;
-            
-            push(ref(db, `private_chats/${chatId}`), {
-                senderId: currentUser.uid, senderName: currentUserData.username,
-                text: text, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }).then(() => input.value = "");
+            push(ref(db, `private_chats/${chatId}`), { senderId: currentUser.uid, senderName: currentUserData.username, text: text, timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }).then(() => input.value = "");
         }
 
         function listenActivePrivateChat() {
             if(!activePrivateChatUid) return;
             const chatId = currentUser.uid > activePrivateChatUid ? currentUser.uid + "_" + activePrivateChatUid : activePrivateChatUid + "_" + currentUser.uid;
-            
             onValue(ref(db, `private_chats/${chatId}`), (snapshot) => {
-                const box = document.getElementById('private-chat-box');
-                box.innerHTML = "";
-                if(!snapshot.exists()) return;
-                
+                const box = document.getElementById('private-chat-box'); box.innerHTML = ""; if(!snapshot.exists()) return;
                 snapshot.forEach((child) => {
-                    const msg = child.val();
-                    const isMe = msg.senderId === currentUser.uid;
-                    const msgDiv = document.createElement('div');
-                    msgDiv.className = `flex ${isMe ? 'justify-end' : 'justify-start'} w-full msg-anim`;
-                    let bgClass = isMe ? 'bg-[#d4af37] text-black rounded-tr-none' : 'bg-white/10 text-gray-200 rounded-tl-none border border-white/5';
-                    msgDiv.innerHTML = `<div class="max-w-[85%] sm:max-w-[70%] rounded-2xl p-3 ${bgClass} shadow-md"><p class="text-[9px] sm:text-[10px] font-bold opacity-70 mb-1">${msg.senderName}</p><p class="text-xs sm:text-sm break-all">${msg.text}</p></div>`;
+                    const msg = child.val(); const isMe = msg.senderId === currentUser.uid;
+                    const msgDiv = document.createElement('div'); msgDiv.className = `flex ${isMe ? 'justify-end' : 'justify-start'} w-full msg-anim`;
+                    let bgClass = isMe ? 'bg-gradient-to-l from-gray-700 to-gray-600 text-white rounded-tr-sm' : 'bg-blue-900/40 text-gray-100 rounded-tl-sm border border-blue-500/20';
+                    msgDiv.innerHTML = `<div class="max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 ${bgClass} shadow-md"><p class="text-[9px] sm:text-[10px] font-bold opacity-60 mb-1.5">${msg.senderName}</p><p class="text-sm sm:text-base break-all">${msg.text}</p></div>`;
                     box.appendChild(msgDiv);
-                });
-                box.scrollTop = box.scrollHeight;
+                }); box.scrollTop = box.scrollHeight;
             });
         }
 
-
-        // ------------------------- DESTEK SİSTEMİ -------------------------
         window.createNewTicket = function() {
-            const now = Date.now();
-            const lastTime = currentUserData.lastTicketTime || 0;
-            if(now - lastTime < 3600000 && currentUserData.role !== 'admin') {
-                showToast("Uyarı", "Saatte 1 kez destek talebi açabilirsiniz.", "fa-stopwatch");
-                return;
-            }
-
+            const now = Date.now(); const lastTime = currentUserData.lastTicketTime || 0;
+            if(now - lastTime < 3600000 && currentUserData.role !== 'admin') return showToast("Sakin ol!", "Saatte 1 kez destek talebi açabilirsin.", "fa-stopwatch");
             const reason = document.getElementById('ticket-reason').value; 
-
             get(ref(db, 'system/ticket_count')).then(snap => {
-                let count = snap.exists() ? snap.val() : 0;
-                count++;
-                update(ref(db, 'system'), { ticket_count: count });
-                
-                const ticketName = "Destek-" + count;
+                let count = snap.exists() ? snap.val() : 0; count++; update(ref(db, 'system'), { ticket_count: count });
                 const ticketId = currentUser.uid;
-
-                set(ref(db, `tickets/${ticketId}`), {
-                    id: ticketId,
-                    title: ticketName,
-                    creatorName: currentUserData.username,
-                    reason: reason, 
-                    status: 'pending',
-                    timestamp: new Date().getTime()
-                }).then(() => {
-                    update(ref(db, `users/${currentUser.uid}`), { lastTicketTime: now });
-                    checkMyTicket();
-                    showToast("Başarılı", "Talebiniz iletildi. Admin bekleniyor.", "fa-check");
+                set(ref(db, `tickets/${ticketId}`), { id: ticketId, title: "Destek-" + count, creatorName: currentUserData.username, reason: reason, status: 'pending', timestamp: new Date().getTime() }).then(() => {
+                    update(ref(db, `users/${currentUser.uid}`), { lastTicketTime: now }); checkMyTicket(); showToast("Başarılı", "Talebin iletildi. Admin bekleniyor.", "fa-check");
                 });
             });
         }
 
         function checkMyTicket() {
-            if(currentUserData.role === 'admin') {
-                document.getElementById('support-creation-screen').classList.add('hidden');
-                document.getElementById('support-active-screen').classList.add('hidden');
-                return; 
-            }
-
+            if(currentUserData.role === 'admin') { document.getElementById('support-creation-screen').classList.add('hidden'); document.getElementById('support-active-screen').classList.add('hidden'); return; }
             onValue(ref(db, `tickets/${currentUser.uid}`), (snapshot) => {
                 if(snapshot.exists()) {
-                    const ticket = snapshot.val();
-                    activeTicketId = ticket.id;
-                    document.getElementById('support-creation-screen').classList.add('hidden');
-                    document.getElementById('support-active-screen').classList.remove('hidden');
+                    const ticket = snapshot.val(); activeTicketId = ticket.id;
+                    document.getElementById('support-creation-screen').classList.add('hidden'); document.getElementById('support-active-screen').classList.remove('hidden');
                     document.getElementById('active-ticket-title').innerText = ticket.title + " (" + ticket.reason + ")";
                     document.getElementById('admin-ticket-back-btn').classList.add('hidden');
-                    
                     const statusBadge = document.getElementById('active-ticket-status');
-                    if(ticket.status === 'pending') {
-                        statusBadge.innerText = "Admin Bekleniyor...";
-                        statusBadge.className = "ml-2 text-[10px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded border border-yellow-500/50";
-                    } else {
-                        statusBadge.innerText = "🟢 Görüşme Aktif";
-                        statusBadge.className = "ml-2 text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded border border-green-500/50";
-                    }
+                    if(ticket.status === 'pending') { statusBadge.innerText = "Admin Bekleniyor..."; statusBadge.className = "ml-3 text-[10px] bg-yellow-500/20 text-yellow-400 px-2.5 py-1 rounded-md border border-yellow-500/50 font-bold"; } 
+                    else { statusBadge.innerText = "🟢 Görüşme Aktif"; statusBadge.className = "ml-3 text-[10px] bg-green-500/20 text-green-400 px-2.5 py-1 rounded-md border border-green-500/50 font-bold"; }
                     listenTicketChat(activeTicketId);
-                } else {
-                    activeTicketId = null;
-                    document.getElementById('support-creation-screen').classList.remove('hidden');
-                    document.getElementById('support-active-screen').classList.add('hidden');
-                }
+                } else { activeTicketId = null; document.getElementById('support-creation-screen').classList.remove('hidden'); document.getElementById('support-active-screen').classList.add('hidden'); }
             });
         }
-
         window.closeMyTicket = function() {
-            if(confirm("Talebi iptal edip kapatmak istiyor musun?")) {
-                if(currentUserData.role === 'admin') {
-                     remove(ref(db, `tickets/${activeTicketId}`));
-                     remove(ref(db, `ticket_chats/${activeTicketId}`));
-                     backToAdminTickets();
-                } else {
-                     remove(ref(db, `tickets/${currentUser.uid}`));
-                     remove(ref(db, `ticket_chats/${currentUser.uid}`));
-                }
+            if(confirm("Talebi kapatmak istiyor musun?")) {
+                if(currentUserData.role === 'admin') { remove(ref(db, `tickets/${activeTicketId}`)); remove(ref(db, `ticket_chats/${activeTicketId}`)); backToAdminTickets(); } 
+                else { remove(ref(db, `tickets/${currentUser.uid}`)); remove(ref(db, `ticket_chats/${currentUser.uid}`)); }
             }
         }
 
-        // ------------------------- ADMİN LOGLARI & DESTEKLER (ÇEVRİMİÇİ GÜNCELLEMESİ) -------------------------
+        /* ---------------- RANK VERME & ADMİN ---------------- */
         function listenAdminTickets() {
             onValue(ref(db, 'tickets'), (snapshot) => {
-                const list = document.getElementById('admin-tickets-list');
-                list.innerHTML = "";
-                if(!snapshot.exists()) {
-                    list.innerHTML = '<p class="text-xs text-gray-500">Talep yok.</p>';
-                    return;
-                }
+                const list = document.getElementById('admin-tickets-list'); list.innerHTML = "";
+                if(!snapshot.exists()) { list.innerHTML = '<p class="text-xs text-gray-500">Oh be, sorun yok.</p>'; return; }
                 snapshot.forEach(child => {
                     const t = child.val();
-                    list.innerHTML += `
-                        <div class="bg-white/5 p-3 rounded-lg flex justify-between items-center border-l-2 ${t.status==='pending' ? 'border-yellow-500' : 'border-green-500'} mb-2">
-                            <div>
-                                <p class="text-sm font-bold text-white">${t.title} <span class="text-[10px] text-[#d4af37] font-normal ml-1">(${t.creatorName})</span></p>
-                                <p class="text-[10px] text-gray-400 mt-0.5">Konu: ${t.reason || 'Belirtilmedi'}</p>
-                            </div>
-                            <button onclick="joinTicket('${t.id}', '${t.title}', '${t.reason}')" class="text-xs bg-blue-600 px-3 py-1.5 rounded font-bold shadow-lg">${t.status==='pending' ? 'Cevapla' : 'Geri Dön'}</button>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        /* YENİ GÜNCELLENMİŞ ADMİN LOGLARI (Canlı Aktiflik) */
-        function listenAdminLogs() {
-            onValue(ref(db, 'users'), (snapshot) => {
-                const list = document.getElementById('admin-logs-list');
-                if(!list) return;
-                list.innerHTML = "";
-                if(!snapshot.exists()) return;
-                
-                snapshot.forEach(c => {
-                    const u = c.val();
-                    const statusDot = u.isOnline 
-                        ? '<i class="fa-solid fa-circle text-green-500 text-[8px] mr-1 animate-pulse"></i><span class="text-green-500">Çevrimiçi</span>' 
-                        : '<i class="fa-solid fa-circle text-gray-500 text-[8px] mr-1"></i><span class="text-gray-400">Çevrimdışı</span>';
-                    
-                    list.innerHTML += `
-                        <div class="flex justify-between items-center bg-white/5 p-2 rounded-lg mb-1 border border-white/5">
-                            <div class="flex items-center">
-                                <span class="text-xs font-bold ${u.role === 'admin' ? 'text-red-400' : 'text-white'} mr-2">${u.username}</span>
-                                <span class="text-[9px] bg-black/50 px-1.5 py-0.5 rounded flex items-center">${statusDot}</span>
-                            </div>
-                            <span class="text-[10px] text-gray-400 bg-black/50 px-2 py-1 rounded"><i class="fa-solid fa-clock mr-1 text-[#d4af37]"></i>${u.lastLogin || 'Giriş Yapmadı'}</span>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        window.joinTicket = function(ticketId, title, reason) {
-            update(ref(db, `tickets/${ticketId}`), { status: 'active' });
-            activeTicketId = ticketId;
-            switchTab('support-tab'); 
-            
-            document.getElementById('support-creation-screen').classList.add('hidden');
-            document.getElementById('support-active-screen').classList.remove('hidden');
-            document.getElementById('active-ticket-title').innerText = title + " (" + (reason||'Belirtilmedi') + ")";
-            document.getElementById('active-ticket-status').innerText = "🟢 Müşteridesin";
-            document.getElementById('active-ticket-status').className = "ml-2 text-[10px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded";
-            document.getElementById('admin-ticket-back-btn').classList.remove('hidden');
-            
-            listenTicketChat(ticketId);
-        }
-
-        window.backToAdminTickets = function() {
-            switchTab('admin-tab');
-        }
-
-        window.sendTicketMessage = function() {
-            const input = document.getElementById('support-chat-input');
-            if(!input.value.trim() || !activeTicketId) return;
-            push(ref(db, `ticket_chats/${activeTicketId}`), {
-                senderId: currentUser.uid, senderName: currentUserData.username, role: currentUserData.role,
-                text: input.value.trim(), timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }).then(() => input.value = "");
-        }
-
-        function listenTicketChat(ticketId) {
-            onValue(ref(db, `ticket_chats/${ticketId}`), (snapshot) => {
-                const box = document.getElementById('support-chat-box');
-                box.innerHTML = "";
-                if(!snapshot.exists()) return;
-                snapshot.forEach(child => {
-                    const msg = child.val();
-                    const isMe = msg.senderId === currentUser.uid;
-                    const isAdmin = msg.role === 'admin';
-                    let bgClass = isAdmin ? 'bg-blue-600 text-white rounded-xl' : 'bg-white/10 text-gray-200';
-                    if(isMe) bgClass = 'bg-[#d4af37] text-black rounded-tr-none'; else bgClass += ' rounded-tl-none border border-white/10';
-                    box.innerHTML += `
-                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'} w-full msg-anim">
-                            <div class="max-w-[85%] sm:max-w-[70%] rounded-2xl p-3 ${bgClass} shadow-md">
-                                <p class="text-[9px] sm:text-[10px] ${isMe ? 'text-black/70' : 'text-blue-300'} font-bold mb-1">${msg.senderName} ${isAdmin ? '🛡️ Admin' : ''}</p>
-                                <p class="text-xs sm:text-sm break-all">${msg.text}</p>
-                            </div>
+                    list.innerHTML += `<div class="bg-black/50 p-4 rounded-xl flex justify-between items-center border-l-4 ${t.status==='pending' ? 'border-yellow-500' : 'border-green-500'} mb-3">
+                            <div><p class="text-sm font-bold text-white">${t.title} <span class="text-[10px] text-blue-400 font-normal ml-1">(${t.creatorName})</span></p><p class="text-[11px] text-gray-400 mt-1">Konu: ${t.reason || 'Belirtilmedi'}</p></div>
+                            <button onclick="joinTicket('${t.id}', '${t.title}', '${t.reason}')" class="text-xs bg-blue-600 hover:bg-blue-500 px-4 py-2 rounded-lg font-bold shadow-lg transition">${t.status==='pending' ? 'Cevapla' : 'Geri Dön'}</button>
                         </div>`;
                 });
-                box.scrollTop = box.scrollHeight;
             });
         }
 
-        // ------------------------- DİSKO VE YENİ GITHUB MP3 PLAYLIST SİSTEMİ -------------------------
-        
-        let localPlaylist = [];
-        let currentTrackIndex = 0;
+        window.updateUserRank = function(uid, newRank) {
+            update(ref(db, 'users/' + uid), { rank: newRank });
+            showToast("Yetki Verildi", "Kullanıcının rütbesi güncellendi.", "fa-medal");
+        }
 
-        window.toggleDiscoMode = function() {
-            get(ref(db, 'global_state/discoMode')).then(snap => {
-                const currentState = snap.exists() ? snap.val() : false;
-                update(ref(db, 'global_state'), { discoMode: !currentState });
+        function listenAdminLogs() {
+            onValue(ref(db, 'users'), (snapshot) => {
+                const list = document.getElementById('admin-logs-list'); if(!list) return;
+                list.innerHTML = ""; if(!snapshot.exists()) return;
+                snapshot.forEach(c => {
+                    const u = c.val();
+                    const statusDot = u.isOnline ? '<i class="fa-solid fa-circle text-green-500 text-[8px] mr-1 animate-pulse"></i><span class="text-green-400">Çevrimiçi</span>' : '<i class="fa-solid fa-circle text-gray-600 text-[8px] mr-1"></i><span class="text-gray-500">Çevrimdışı</span>';
+                    
+                    // Adminlerin rütbesi değiştirilemez.
+                    const rankSelectHtml = u.role === 'admin' ? 
+                        `<span class="text-[10px] text-red-400 font-bold ml-2 bg-red-900/30 px-2 py-0.5 rounded">Kurucu</span>` : 
+                        `<select onchange="updateUserRank('${u.uid}', this.value)" class="text-[10px] bg-black text-white rounded px-2 py-1 border border-white/20 ml-2 outline-none focus:border-[#d4af37] transition">
+                            <option value="Üye" ${u.rank === 'Üye' || !u.rank ? 'selected' : ''}>Üye</option>
+                            <option value="Bronz" ${u.rank === 'Bronz' ? 'selected' : ''}>Bronz</option>
+                            <option value="Gümüş" ${u.rank === 'Gümüş' ? 'selected' : ''}>Gümüş</option>
+                            <option value="Altın" ${u.rank === 'Altın' ? 'selected' : ''}>Altın</option>
+                            <option value="Asistan" ${u.rank === 'Asistan' ? 'selected' : ''}>Asistan</option>
+                        </select>`;
+
+                    list.innerHTML += `<div class="flex justify-between items-center bg-black/40 p-3 rounded-xl mb-2 border border-white/5">
+                            <div class="flex items-center">
+                                <span class="text-xs font-bold ${u.role === 'admin' ? 'text-red-400' : 'text-white'} mr-2">${u.username}</span>
+                                ${rankSelectHtml}
+                                <span class="text-[9px] bg-black/80 px-2 py-1 rounded-md flex items-center ml-2 border border-white/5">${statusDot}</span>
+                            </div>
+                            <span class="text-[10px] text-gray-400 bg-black/80 px-2.5 py-1.5 rounded-md border border-white/5 flex items-center hidden md:flex"><i class="fa-solid fa-clock mr-1.5 text-[#d4af37]"></i>${u.lastLogin || 'Giriş Yapmadı'}</span>
+                        </div>`;
+                });
             });
         }
 
+        window.joinTicket = function(id, title, reason) {
+            update(ref(db, `tickets/${id}`), { status: 'active' }); activeTicketId = id; switchTab('support-tab'); 
+            document.getElementById('support-creation-screen').classList.add('hidden'); document.getElementById('support-active-screen').classList.remove('hidden');
+            document.getElementById('active-ticket-title').innerText = title + " (" + (reason||'Belirtilmedi') + ")";
+            document.getElementById('active-ticket-status').innerText = "🟢 Müşteridesin"; document.getElementById('active-ticket-status').className = "ml-3 text-[10px] bg-green-500/20 text-green-400 px-2.5 py-1 rounded-md font-bold";
+            document.getElementById('admin-ticket-back-btn').classList.remove('hidden'); listenTicketChat(id);
+        }
+        window.backToAdminTickets = function() { switchTab('admin-tab'); }
+        window.sendTicketMessage = function() {
+            const input = document.getElementById('support-chat-input'); if(!input.value.trim() || !activeTicketId) return;
+            push(ref(db, `ticket_chats/${activeTicketId}`), { senderId: currentUser.uid, senderName: currentUserData.username, role: currentUserData.role, text: input.value.trim(), timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }).then(() => input.value = "");
+        }
+        function listenTicketChat(id) {
+            onValue(ref(db, `ticket_chats/${id}`), (snapshot) => {
+                const box = document.getElementById('support-chat-box'); box.innerHTML = ""; if(!snapshot.exists()) return;
+                snapshot.forEach(child => {
+                    const msg = child.val(); const isMe = msg.senderId === currentUser.uid; const isAdmin = msg.role === 'admin';
+                    let bgClass = isAdmin ? 'bg-gradient-to-r from-blue-700 to-blue-600 text-white rounded-tr-sm shadow-lg' : 'bg-white/10 text-gray-200 rounded-tl-sm';
+                    if(isMe && !isAdmin) bgClass = 'bg-gradient-to-r from-gray-700 to-gray-600 text-white rounded-tr-sm'; 
+                    box.innerHTML += `<div class="flex ${isMe ? 'justify-end' : 'justify-start'} w-full msg-anim">
+                            <div class="max-w-[85%] sm:max-w-[75%] rounded-2xl p-3.5 ${bgClass} shadow-md"><p class="text-[9px] sm:text-[10px] ${isAdmin ? 'text-blue-200' : 'text-gray-400'} font-extrabold mb-1.5">${msg.senderName} ${isAdmin ? '🛡️ Admin' : ''}</p><p class="text-sm sm:text-base break-all">${msg.text}</p></div></div>`;
+                }); box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        /* ---------------- DİSKO VE RADYO (Aynen kaldı) ---------------- */
+        let localPlaylist = []; let currentTrackIndex = 0;
+        window.toggleDiscoMode = function() { get(ref(db, 'global_state/discoMode')).then(snap => { update(ref(db, 'global_state'), { discoMode: !(snap.exists() ? snap.val() : false) }); }); }
         window.playGlobalPlaylist = function() {
-            const text = document.getElementById('admin-playlist-urls').value;
-            const urls = text.split('\n').map(u => u.trim()).filter(u => u !== "");
-            
-            if(urls.length === 0) return alert("Lütfen en az 1 adet MP3 linki girin.");
-            
-            update(ref(db, 'global_state'), { playlist: urls, playMusic: true, updateTime: Date.now() });
-            showToast("Sistem", "Çalma listesi tüm kullanıcılarda başlatıldı.", "fa-music");
+            const text = document.getElementById('admin-playlist-urls').value; const urls = text.split('\n').map(u => u.trim()).filter(u => u !== "");
+            if(urls.length === 0) return alert("En az 1 adet MP3 linki gir.");
+            update(ref(db, 'global_state'), { playlist: urls, playMusic: true, updateTime: Date.now() }); showToast("Radyo", "Müzik yayına girdi.", "fa-music");
         }
-
-        window.stopGlobalMusic = function() {
-            update(ref(db, 'global_state'), { playMusic: false });
-        }
-
+        window.stopGlobalMusic = function() { update(ref(db, 'global_state'), { playMusic: false }); }
         function listenGlobalState() {
             onValue(ref(db, 'global_state'), (snapshot) => {
-                if(!snapshot.exists()) return;
-                const state = snapshot.val();
-                
-                if(state.discoMode) {
-                    document.body.classList.add('disco-active');
-                    document.getElementById('btn-disco')?.classList.replace('from-purple-600', 'from-red-600');
-                    if(document.getElementById('btn-disco')) document.getElementById('btn-disco').innerText = "🛑 DİSKO MODUNU KAPAT";
-                } else {
-                    document.body.classList.remove('disco-active');
-                    document.getElementById('btn-disco')?.classList.replace('from-red-600', 'from-purple-600');
-                    if(document.getElementById('btn-disco')) document.getElementById('btn-disco').innerText = "🕺 DİSKO MODUNU AÇ";
-                }
-
-                const audio = document.getElementById('global-audio-player');
-                const indicator = document.getElementById('music-indicator');
-                
+                if(!snapshot.exists()) return; const state = snapshot.val();
+                if(state.discoMode) { document.body.classList.add('disco-active'); if(document.getElementById('btn-disco')) document.getElementById('btn-disco').innerText = "🛑 DİSKO MODUNU KAPAT"; } 
+                else { document.body.classList.remove('disco-active'); if(document.getElementById('btn-disco')) document.getElementById('btn-disco').innerText = "🕺 DİSKO MODUNU AÇ"; }
+                const audio = document.getElementById('global-audio-player'); const indicator = document.getElementById('music-indicator');
                 if(state.playMusic && state.playlist && state.playlist.length > 0) {
-                    if(document.getElementById('admin-playlist-urls')) {
-                        document.getElementById('admin-playlist-urls').value = state.playlist.join('\n');
-                    }
-
-                    localPlaylist = state.playlist;
-                    
-                    if(currentTrackIndex >= localPlaylist.length) currentTrackIndex = 0;
-                    
+                    if(document.getElementById('admin-playlist-urls')) document.getElementById('admin-playlist-urls').value = state.playlist.join('\n');
+                    localPlaylist = state.playlist; if(currentTrackIndex >= localPlaylist.length) currentTrackIndex = 0;
                     const expectedSrc = localPlaylist[currentTrackIndex];
-                    
-                    if(audio.src !== expectedSrc || audio.paused) {
-                        audio.src = expectedSrc;
-                        audio.play().then(() => {
-                            indicator.classList.remove('hidden');
-                        }).catch(e => console.log("Otomatik oynatma engeli - Kullanıcı etkileşimi bekleniyor."));
-                    }
-                } else {
-                    audio.pause();
-                    indicator.classList.add('hidden');
-                }
+                    if(audio.src !== expectedSrc || audio.paused) { audio.src = expectedSrc; audio.play().then(() => indicator.classList.remove('hidden')).catch(e => console.log("Otomatik oynatma engeli.")); }
+                } else { audio.pause(); indicator.classList.add('hidden'); }
             });
         }
-
-        document.getElementById('global-audio-player').onended = function() {
-            if(localPlaylist.length > 0) {
-                currentTrackIndex = (currentTrackIndex + 1) % localPlaylist.length; 
-                this.src = localPlaylist[currentTrackIndex];
-                this.play().catch(e => console.log(e));
-            }
-        };
-
-        window.handleChatEnter = function(event, type) {
-            if (event.key === 'Enter') {
-                if (type === 'global') sendGlobalMessage();
-                else if (type === 'private') sendPrivateMessage();
-                else if (type === 'support') sendTicketMessage();
-            }
-        }
+        document.getElementById('global-audio-player').onended = function() { if(localPlaylist.length > 0) { currentTrackIndex = (currentTrackIndex + 1) % localPlaylist.length; this.src = localPlaylist[currentTrackIndex]; this.play().catch(e=>e); } };
+        window.handleChatEnter = function(e, t) { if (e.key === 'Enter') { if (t === 'global') sendGlobalMessage(); else if (t === 'private') sendPrivateMessage(); else if (t === 'support') sendTicketMessage(); } }
     </script>
 </body>
 </html>
